@@ -1,6 +1,10 @@
 {
     "name": "nvmcommunity/alchemist-restful-api",
     "description": "A library implementing Restful API interface",
+    "keywords": [
+        "nvmcommunity",
+        "alchemist-restful-api"
+    ],
     "type": "library",
     "license": "MIT",
     "autoload": {
@@ -8,13 +12,20 @@
             "Nvmcommunity\\Alchemist\\RestfulApi\\": "src/"
         }
     },
+    "support": {
+        "issues": "https://github.com/nvmcommunity/alchemist-restful-api/issues",
+        "source": "https://github.com/nvmcommunity/alchemist-restful-api"
+    },
     "authors": [
         {
             "name": "NVM Community",
-            "email": "nvmcommunity.io@gmail.com"
+            "email": "nvmcommunity.io@gmail.com",
+            "homepage": "https://nvmcommunity.io"
         }
     ],
     "require": {
         "nette/utils": "^3.2"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
