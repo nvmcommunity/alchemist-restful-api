@@ -1,0 +1,20 @@
+{
+    "name": "nvmcommunity/alchemist-restful-api",
+    "description": "A library implementing Restful API interface",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Nvmcommunity\\Alchemist\\RestfulApi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "NVM Community",
+            "email": "nvmcommunity.io@gmail.com"
+        }
+    ],
+    "require": {
+        "nette/utils": "^3.2"
+    }
+}
