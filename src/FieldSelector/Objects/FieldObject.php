@@ -21,14 +21,14 @@ class FieldObject
     /**
      * Sub resource fields (optional)
      *
-     * @var array
+     * @var string[]
      */
     private array $subFields;
 
     /**
      * @param string $fieldName
      * @param int $limit
-     * @param array $subFields
+     * @param string[] $subFields
      */
     public function __construct(string $fieldName, int $limit = 0, array $subFields = [])
     {
@@ -59,5 +59,13 @@ class FieldObject
     public function getSubFields(): array
     {
         return $this->subFields;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->name;
     }
 }

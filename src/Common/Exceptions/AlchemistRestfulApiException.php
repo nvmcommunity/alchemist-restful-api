@@ -1,6 +1,6 @@
 <?php
 
-namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Exceptions;
+namespace Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions;
 
 use Exception;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Nvmcommunity\Alchemist\RestfulApi\Common\Notification;
+namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications;
 
-class ValidationNotification
+class FieldSelectorValidationNotification
 {
     /**
      * Has passed all the tests.
@@ -51,7 +51,7 @@ class ValidationNotification
     }
 
     /**
-     * @return string[]
+     * @return array<string,array<array<string>|string>|bool>
      */
     public function toArray(): array
     {
@@ -80,7 +80,7 @@ class ValidationNotification
     }
 
     /**
-     * @return string[]
+     * @return string[][]
      */
     public function getUnselectableSubFields(): array
     {

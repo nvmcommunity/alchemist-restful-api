@@ -3,9 +3,9 @@
 namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers;
 
 use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Strings;
-use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ValidationNotification;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications\FieldSelectorValidationNotification;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Exceptions\FieldSelectorSyntaxErrorException;
-use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Exceptions\AlchemistRestfulApiException;
+use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\FieldObject;
 
 class FieldSelector
@@ -35,7 +35,7 @@ class FieldSelector
     }
 
     /**
-     * @param array $selectableFields
+     * @param string[] $selectableFields
      * @return FieldSelector
      */
     public function defineSelectableFields(array $selectableFields): self
@@ -77,6 +77,26 @@ class FieldSelector
     }
 
     /**
+     * @return string[]
+     */
+    public function flatFields(): array
+    {
+        return array_map(static fn($field) => (string) $field, $this->fields);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function subFields(string $fieldName): array
+    {
+        if (! array_key_exists($fieldName, $this->fields)) {
+            return [];
+        }
+
+        return $this->fields[$fieldName]->getSubFields();
+    }
+
+    /**
      * @param string[] $withoutFieldNames
      * @return FieldObject[]
      */
@@ -115,9 +135,9 @@ class FieldSelector
     }
 
     /**
-     * @return ValidationNotification
+     * @return FieldSelectorValidationNotification
      */
-    public function validate(): ValidationNotification
+    public function validate(): FieldSelectorValidationNotification
     {
         /** @var string[] $unselectableFields */
         $unselectableFields = [];
@@ -129,7 +149,7 @@ class FieldSelector
         $subsidiarySelectErrors = [];
 
         if (empty($this->selectableFields)) {
-            return new ValidationNotification(true);
+            return new FieldSelectorValidationNotification(true);
         }
 
         $selectableFieldMap = array_flip($this->selectableFields);
@@ -165,20 +185,20 @@ class FieldSelector
         }
 
         if ($subsidiarySelectErrors) {
-            return new ValidationNotification(
+            return new FieldSelectorValidationNotification(
                 false, $unselectableFields, $unselectableSubFields, $subsidiarySelectErrors
             );
         }
 
         if ($unselectableSubFields) {
-            return new ValidationNotification(false, $unselectableFields, $unselectableSubFields);
+            return new FieldSelectorValidationNotification(false, $unselectableFields, $unselectableSubFields);
         }
 
         if ($unselectableFields) {
-            return new ValidationNotification(false, $unselectableFields);
+            return new FieldSelectorValidationNotification(false, $unselectableFields);
         }
 
-        return new ValidationNotification(true);
+        return new FieldSelectorValidationNotification(true);
     }
 
     /**
@@ -191,7 +211,7 @@ class FieldSelector
 
         if (! empty($matches)) {
             $field = trim($matches[1]);
-            $limit = $matches[2];
+            $limit = (int) $matches[2];
 
             $subfields = [];
 

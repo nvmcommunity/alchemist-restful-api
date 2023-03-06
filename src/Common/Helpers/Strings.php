@@ -6,7 +6,7 @@ class Strings extends \Nette\Utils\Strings
 {
     /**
      * @param string $haystack
-     * @param string $delimiter
+     * @param non-empty-string $delimiter
      * @return string
      */
     public static function start(string $haystack, string $delimiter): string

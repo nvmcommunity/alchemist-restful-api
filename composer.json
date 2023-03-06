@@ -27,5 +27,9 @@
         "nette/utils": "^3.2"
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "require-dev": {
+        "phpstan/phpstan": "^1.10",
+        "symfony/var-dumper": "^6.2"
+    }
 }

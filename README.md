@@ -11,12 +11,24 @@ A feature-rich library implementing RESTful API interface for PHP.
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
 - [Basic usage](#basic-usage)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
 - [Release](#release)
 - [License](#license)
 
 ## Introduction
 
 Based on practical experiences from implementing API interfaces on complex software systems, I have build this library with set of components that cover serveral common use cases for API interface. This library will help you quickly get a robust and flexible RESTful-based API interface and add many necessary features for your application.
+
+## Prerequisites
+
+- PHP 7.4
+
+## Installation
+
+```bash
+composer require nvmcommunity/alchemist-restful-api
+```
 
 ## Basic usage
 
@@ -28,7 +40,7 @@ The `FieldSelector` is one of the features of Alchemist Restful API, it allows y
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 
 $restfulApi = new AlchemistRestfulApi([
-    // The fields are passed in from the input, fields are separated by commas, and subsidiary fields are enclosed in `{}`.
+    // The fields are passed in from the request input, fields are separated by commas, and subsidiary fields are enclosed in `{}`.
     'fields' => 'id,order_date,order_status,order_items{product_id,product_name,quality}'
 ]);
 
