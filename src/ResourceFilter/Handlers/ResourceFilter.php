@@ -15,6 +15,7 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Exceptions\FilteringRequire
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Exceptions\FilteringRequiredIfException;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Exceptions\FilteringRequiredWithException;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Exceptions\FilteringRuleAlreadyDefinedException;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringObject;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringOptions;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringRules;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\InvalidFilteringValue;
@@ -66,7 +67,7 @@ class ResourceFilter
     {
         $this->initParams($filteringRules);
 
-        $this->initRecursiveFiltering($this->getFilterings());
+        $this->initRecursiveFiltering($this->filtering);
 
         return $this;
     }
@@ -111,8 +112,11 @@ class ResourceFilter
      * @param string $filteringOperator
      *
      * @return mixed
+     *
+     * @throws FilteringInvalidRuleException
+     * @throws FilteringInvalidRuleOperatorException
      */
-    public function pullFilteringValue(string $filteringDotName, string $filteringOperator): mixed
+    private function pullFilteringValue(string $filteringDotName, string $filteringOperator): mixed
     {
         $filteringRule = $this->getFilteringRuleByDotName($filteringDotName);
 
@@ -137,10 +141,12 @@ class ResourceFilter
      * @param string $filteringOperator
      * @param $filteringValue
      * @return ResourceFilter
+     *
+     * @throws FilteringInvalidRuleException
      */
     public function addFilteringIfNotExists(string $filteringDotName, string $filteringOperator, $filteringValue): ResourceFilter
     {
-        if ($this->hasFiltering("{$filteringDotName}:{$filteringOperator}", $filteringOperator)) {
+        if ($this->hasFiltering($filteringDotName, $filteringOperator)) {
             return $this;
         }
 
@@ -162,7 +168,7 @@ class ResourceFilter
     /**
      * @return array
      */
-    public function parseConditions(): array
+    public function filtering(): array
     {
         $conditions = [];
 
@@ -184,49 +190,32 @@ class ResourceFilter
                         break;
                 }
 
-                $conditionNameWithOperator = ($conditionOperator !== '=') ? "{$filteringDotName} {$conditionOperator}" : $filteringDotName;
+                // $conditionNameWithOperator = ($conditionOperator !== '=') ? "{$filteringDotName}#{$conditionOperator}" : $filteringDotName;
 
-                Arrays::dotSet($conditions, $conditionNameWithOperator, $conditionValue);
+                $conditions[] = new FilteringObject($filteringDotName, $conditionOperator, $filteringValue);
+
+                //Arrays::dotSet($conditions, $conditionNameWithOperator, $conditionValue);
             }
         }
 
         return $conditions;
     }
 
-    #---------------------------------------------------------------------------#
-    # Getter Methods                                                            #
-    #---------------------------------------------------------------------------#
-
     /**
-     * @return array
-     */
-    private function getFilterings(): array
-    {
-        return $this->filtering;
-    }
-
-    /**
-     * @return array
-     */
-    private function getFilteringRules(): array
-    {
-        return $this->filteringRules;
-    }
-
-    /**
+     * @param mixed $notification
      * @return ResourceFilterValidationNotification
      */
-    public function validate(): ResourceFilterValidationNotification
+    public function validate(mixed &$notification = null): ResourceFilterValidationNotification
     {
-        $optionValidationNotification =  $this->validateOption();
+        $optionValidationNotification = $this->validateOption();
 
         if ($optionValidationNotification->passes()) {
-            return $this->validateFiltering();
+            return $notification = $this->validateFiltering();
         }
 
         $validateFiltering = $this->validateFiltering();
 
-        return new ResourceFilterValidationNotification(
+        return $notification = new ResourceFilterValidationNotification(
             false, $optionValidationNotification->getMissingRequiredFiltering(),
             $validateFiltering->getInvalidFiltering(),
             $validateFiltering->getInvalidFilteringValue(),
@@ -248,12 +237,27 @@ class ResourceFilter
     /**
      * @param array $filteringRules
      * @return void
+     *
+     * @throws FilteringRuleAlreadyDefinedException
      */
     private function initParams(array $filteringRules): void
     {
         $this->filteringRules = $filteringRules;
 
-        $this->initFilteringRules($this->getFilteringRules());
+        $this->initFilteringRules($this->filteringRules);
+    }
+
+    /**
+     * @param array $filteringRules
+     * @return void
+     *
+     * @throws FilteringRuleAlreadyDefinedException
+     */
+    private function mergeParams(array $filteringRules): void
+    {
+        $this->filteringRules = array_merge_recursive($this->filteringRules, $filteringRules);
+
+        $this->initFilteringRules($this->filteringRules);
     }
 
     /**
@@ -869,6 +873,7 @@ class ResourceFilter
 
     /**
      * @return array
+     * @throws FilteringException
      */
     private function validateOptionRequired(): array
     {
@@ -887,7 +892,7 @@ class ResourceFilter
             $filteringRule = $this->getFilteringRuleByDotName($filteringDotName);
 
             if ($filteringRule === null) {
-                throw new FilteringException("Can not found filtering rule from required filtering {$filteringDotName}");
+                throw new FilteringException("Can not found filtering rule from defined filtering {$filteringDotName}");
             }
 
             if (! $withAnyOperator && ! $filteringRule->hasOperator($filteringOperator)) {

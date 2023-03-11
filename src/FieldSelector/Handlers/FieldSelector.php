@@ -71,17 +71,31 @@ class FieldSelector
     /**
      * @return FieldObject[]
      */
-    public function fields(): array
+    public function fields(array $withoutFieldNames = []): array
     {
+        if (! empty($withoutFieldNames)) {
+            return $this->withoutFields($withoutFieldNames);
+        }
+
         return $this->fields;
     }
 
     /**
      * @return string[]
      */
-    public function flatFields(): array
+    public function flatFields(array $withoutFieldNames = []): array
     {
-        return array_map(static fn($field) => (string) $field, $this->fields);
+        $fields = [];
+
+        $withoutFieldsMap = array_flip($withoutFieldNames);
+
+        foreach ($this->fields as $field) {
+            if (! array_key_exists($field->getName(), $withoutFieldsMap)) {
+                $fields[] = $field;
+            }
+        }
+
+        return array_map(static fn($field) => (string) $field, $fields);
     }
 
     /**
@@ -100,7 +114,7 @@ class FieldSelector
      * @param string[] $withoutFieldNames
      * @return FieldObject[]
      */
-    public function withoutFields(array $withoutFieldNames): array
+    private function withoutFields(array $withoutFieldNames): array
     {
         $excludedFields = [];
 
@@ -116,28 +130,10 @@ class FieldSelector
     }
 
     /**
-     * @param string[] $withFieldNames
-     * @return FieldObject[]
-     */
-    public function withFields(array $withFieldNames): array
-    {
-        $excludedFields = [];
-
-        $withFieldNameMap = array_flip($withFieldNames);
-
-        foreach ($this->fields as $fieldName => $fieldObj) {
-            if (array_key_exists($fieldName, $withFieldNameMap)) {
-                $excludedFields[$fieldName] = $fieldObj;
-            }
-        }
-
-        return $excludedFields;
-    }
-
-    /**
+     * @param mixed $notification
      * @return FieldSelectorValidationNotification
      */
-    public function validate(): FieldSelectorValidationNotification
+    public function validate(mixed &$notification = null): FieldSelectorValidationNotification
     {
         /** @var string[] $unselectableFields */
         $unselectableFields = [];
@@ -149,7 +145,7 @@ class FieldSelector
         $subsidiarySelectErrors = [];
 
         if (empty($this->selectableFields)) {
-            return new FieldSelectorValidationNotification(true);
+            return $notification = new FieldSelectorValidationNotification(true);
         }
 
         $selectableFieldMap = array_flip($this->selectableFields);
@@ -185,20 +181,20 @@ class FieldSelector
         }
 
         if ($subsidiarySelectErrors) {
-            return new FieldSelectorValidationNotification(
+            return $notification = new FieldSelectorValidationNotification(
                 false, $unselectableFields, $unselectableSubFields, $subsidiarySelectErrors
             );
         }
 
         if ($unselectableSubFields) {
-            return new FieldSelectorValidationNotification(false, $unselectableFields, $unselectableSubFields);
+            return $notification = new FieldSelectorValidationNotification(false, $unselectableFields, $unselectableSubFields);
         }
 
         if ($unselectableFields) {
-            return new FieldSelectorValidationNotification(false, $unselectableFields);
+            return $notification = new FieldSelectorValidationNotification(false, $unselectableFields);
         }
 
-        return new FieldSelectorValidationNotification(true);
+        return $notification = new FieldSelectorValidationNotification(true);
     }
 
     /**
