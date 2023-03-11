@@ -201,16 +201,17 @@ This table also describes the structure of filtering values for special data typ
 |------------------|-----------------|------------------------|----------------------------------------|
 | eq               | \=              | equal                  | \<value\>                              |
 | ne               | \!=             | not equal              | \<value\>                              |
+| lt               | \<              | lower than             | \<value\>                              |
+| gt               | \>              | greater than           | \<value\>                              |
 | lte              | \<=             | lower than or equal    | \<value\>                              |
 | gte              | \>=             | greater than or equal  | \<value\>                              |
-| gt               | \>              | greater than           | \<value\>                              |
-| lt               | \<              | lower than             | \<value\>                              |
-| contains         | contains        | contains               | \<value\>                              |
+| contains         | contains _(*)_  | contains               | \<value\>                              |
 | between          | between         | between                | array(\<value[0]\>, \<value[1]\>)      |
 | not_between      | not between     | not between            | array(\<value[0]\>, \<value[1]\>)      |
 | in               | in              | in                     | array(\<value[0]\>, \<value[1]\>, ...) |
 | not_in           | not in          | not in                 | array(\<value[0]\>, \<value[1]\>, ...) |
 
+_(*) Be careful with this operation, you need to handle additional processing to convert it to the native operator of the database management system._
 
 ## Resource Pagination
 
