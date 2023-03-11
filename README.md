@@ -18,11 +18,12 @@ A feature-rich library implementing RESTful API interface for PHP.
 
 ## Introduction
 
-Based on practical experiences from implementing API interfaces on complex software systems, I have build this library with set of components that cover serveral common use cases for API interface. This library will help you quickly get a robust and flexible RESTful-based API interface and add many necessary features for your application.
+Based on practical experiences from implementing API interfaces on complex software systems, I founded the project with my colleagues in NVM Community core team who built this library with set of components that cover serveral common use cases for API interface. This library will help you quickly get a robust and flexible RESTful-based API interface and add many necessary features for your application.
 
 ## Prerequisites
 
 - PHP 7.4
+- Composer installed ([https://getcomposer.org](https://getcomposer.org/))
 
 ## Installation
 
@@ -90,6 +91,7 @@ As a core feature of Alchemist Restful API, it focuses on checking whether the f
 
 ```php
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringRules;
 
 $restfulApi = new AlchemistRestfulApi([
     // The filtering are passed in from the request input.
@@ -120,7 +122,7 @@ $resourceFilter = $restfulApi->resourceFilter()
         FilteringRules::Integer('product_id', ['eq']),
 
         // Your API allows filtering by is_best_sales with the operations "eq" and the data of the filtering must
-        // be an integer type with value of: `0` (represent for false) or 1 (represent for true)
+        // be an integer type with value of: `0` (represent for false) or `1` (represent for true)
         FilteringRules::Boolean('is_best_sales', ['eq']),
     ]);
 
