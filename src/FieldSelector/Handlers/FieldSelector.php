@@ -130,10 +130,10 @@ class FieldSelector
     }
 
     /**
-     * @param mixed $notification
+     * @param $notification
      * @return FieldSelectorValidationNotification
      */
-    public function validate(mixed &$notification = null): FieldSelectorValidationNotification
+    public function validate(&$notification = null): FieldSelectorValidationNotification
     {
         /** @var string[] $unselectableFields */
         $unselectableFields = [];

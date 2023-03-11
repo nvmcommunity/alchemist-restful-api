@@ -4,9 +4,18 @@ namespace Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects;
 
 class FilteringObject
 {
+    /**
+     * @return string
+     */
     private string $filtering;
+    /**
+     * @return string
+     */
     private string $operator;
-    private mixed $filteringValue;
+    /**
+     * @return mixed
+     */
+    private $filteringValue;
 
     public function __construct(string $filtering, string $operator, $filteringValue)
     {
@@ -34,7 +43,7 @@ class FilteringObject
     /**
      * @return mixed
      */
-    public function filteringValue(): mixed
+    public function filteringValue()
     {
         return $this->filteringValue;
     }

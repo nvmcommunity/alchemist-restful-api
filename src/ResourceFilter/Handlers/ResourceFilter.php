@@ -116,7 +116,7 @@ class ResourceFilter
      * @throws FilteringInvalidRuleException
      * @throws FilteringInvalidRuleOperatorException
      */
-    private function pullFilteringValue(string $filteringDotName, string $filteringOperator): mixed
+    private function pullFilteringValue(string $filteringDotName, string $filteringOperator)
     {
         $filteringRule = $this->getFilteringRuleByDotName($filteringDotName);
 
@@ -205,7 +205,7 @@ class ResourceFilter
      * @param mixed $notification
      * @return ResourceFilterValidationNotification
      */
-    public function validate(mixed &$notification = null): ResourceFilterValidationNotification
+    public function validate(&$notification = null): ResourceFilterValidationNotification
     {
         $optionValidationNotification = $this->validateOption();
 
