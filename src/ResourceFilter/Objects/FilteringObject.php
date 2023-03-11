@@ -27,7 +27,7 @@ class FilteringObject
     /**
      * @return string
      */
-    public function filtering(): string
+    public function getFiltering(): string
     {
         return $this->filtering;
     }
@@ -35,7 +35,7 @@ class FilteringObject
     /**
      * @return string
      */
-    public function operator(): string
+    public function getOperator(): string
     {
         return $this->operator;
     }
@@ -43,7 +43,7 @@ class FilteringObject
     /**
      * @return mixed
      */
-    public function filteringValue()
+    public function getFilteringValue()
     {
         return $this->filteringValue;
     }

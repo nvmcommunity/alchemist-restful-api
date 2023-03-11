@@ -76,8 +76,8 @@ if (! $fieldSelector->validate($notification)->passes()) {
 // Finally, what you will receive by call the `$fieldSelector->fields()` method is a list of field objects, and everything has been carefully checked.
 
 // Combine with the use of an ORM/Query Builder
-$withOutFields = ['order_items'];
-$result = ExampleOrderQueryBuilder::select($fieldSelector->flatFields($withOutFields))->get();
+
+$result = ExampleOrderQueryBuilder::select($fieldSelector->flatFields($withOutFields = ['order_items']))->get();
 
 // For other purposes, use `$fieldSelector->fields()` to obtain a complete map list of field object.
 
@@ -86,8 +86,7 @@ var_dump($fieldSelector->fields());
 
 ### Resource Filtering
 
-As a core feature of Alchemist Restful API, it focuses on checking whether the filters that your API client are using are in the defined filterable list or not. In addition, it also checks data types, valid filter operations, which filters are required, etc.
-
+As a core feature of Alchemist Restful API, it focuses on checking whether the filtering that your API client are using are in the defined filterable list or not. In addition, it also checks data types, valid filtering operations, which filtering are required, etc.
 
 ```php
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
@@ -95,6 +94,7 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringRules;
 
 $restfulApi = new AlchemistRestfulApi([
     // The filtering are passed in from the request input.
+    // Use a colon `:` to separate filtering and operator.
     'filtering' => [
         'order_date:lte' => '2023-02-26',
         'product_name:contains' => 'clothes hanger'
@@ -152,10 +152,105 @@ $result = ExampleOrderQueryBuilder::where($conditions)->get();
 var_dump($resourceFilter->filtering());
 ```
 
+### Filtering Rules
+
+A Filtering Rules Object is used to define filtering with the following information:
+
+- The name of the filtering
+- Supported operations of the filtering
+- Data type of the filtering value
+- Format of the filtering data
+- Fixed values allowed to be passed in for the filtering.
+
+**Supported filtering rules**
+
+```php
+// String type filtering
+FilteringRules::String(string $filtering, array $supportedOperators)
+
+// Integer type filtering
+FilteringRules::Integer(string $filtering, array $supportedOperators)
+
+// Numeric type filtering
+FilteringRules::Number(string $filtering, array $supportedOperators)
+
+// Date type filtering, default format: 'Y-m-d'
+FilteringRules::Date(string $filtering, array $supportedOperators, array $formats = ['Y-m-d'])
+
+// Datetime type date time, default format: 'Y-m-d H:i:s'
+FilteringRules::Datetime(string $filtering, array $supportedOperators, array $formats = ['Y-m-d H:i:s'])
+
+// Enum type
+FilteringRules::Enum(string $filtering, array $supportedOperators, array $enums)
+
+// Boolean type filtering: `0` (represent for false) or `1` (represent for true)
+FilteringRules::Boolean(string $filtering, array $supportedOperators = [])
+```
+
+### Filtering operators
+
+Filtering with operator in request input can be represented in form of: `<filtering>:<operator>`
+
+The operators passed in from the request input (Request Operator) will be converted to the target operator. 
+This table also describes the structure of filtering values for special data types such as:
+`between`, `not between`, `in`, `not in`
+
+**Supported operators**
+
+| Request Operator | Target Operator | Meaning                | Value Structure                        |
+|------------------|-----------------|------------------------|----------------------------------------|
+| eq               | \=              | equal                  | \<value\>                              |
+| ne               | \!=             | not equal              | \<value\>                              |
+| lte              | \<=             | lower than or equal    | \<value\>                              |
+| gte              | \>=             | greater than or equal  | \<value\>                              |
+| gt               | \>              | greater than           | \<value\>                              |
+| lt               | \<              | lower than             | \<value\>                              |
+| contains         | contains        | contains               | \<value\>                              |
+| between          | between         | between                | array(\<value[0]\>, \<value[1]\>)      |
+| not_between      | not between     | not between            | array(\<value[0]\>, \<value[1]\>)      |
+| in               | in              | in                     | array(\<value[0]\>, \<value[1]\>, ...) |
+| not_in           | not in          | not in                 | array(\<value[0]\>, \<value[1]\>, ...) |
+
+
+## Resource Pagination
+
+Support pagination through the offset and limit mechanism.
+
+```php
+$restfulApi = new AlchemistRestfulApi([
+    // The limit and offset are passed in from the request input.
+    'limit' => 10,
+    'offset' => 0,
+]);
+
+$resourceOffsetPaginator = $restfulApi->resourceOffsetPaginator()
+    // Set max limit for resource (don't call this method or set max limit to `0` to make your resource unlimited),
+    // if limit is not passed in from the request input, the max limit parameter will override the limit parameter.
+    ->defineMaxLimit(1000);
+
+
+// Validate your API client pagination parameters (limit, offset), Check if the offset value passed in is negative
+// or not, and whether the limit parameter passed in exceeds the max limit (if max limit defined).
+if (! $resourceOffsetPaginator->validate($notification)->passes()) {
+    // var_dump($notification);
+
+    // Note: $notification object is set of aggregated errors,
+    // you need to implement your own comprehensive error message,
+    // combined with your own multilingual support.
+
+    echo "validate failed"; die();
+}
+
+// Receive an object containing parameters for offset, limit, and max limit.
+$offsetPaginate = $resourceOffsetPaginator->offsetPaginate();
+
+// Combine with the use of an ORM/Query Builder
+$result = ExampleOrderQueryBuilder::limit($offsetPaginate->getLimit())->offset($offsetPaginate->getOffset())->get();
+```
+
 ## Todos
 
-- [x] Document of basic concept
-- [ ] Document about list of supported operation of resource filtering
+- [x] Document of basic concepts
 - [ ] Adding Feature: Pagination, Search, Sorting
 - [ ] Integration with Laravel Framework
 

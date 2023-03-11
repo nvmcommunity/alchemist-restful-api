@@ -14,16 +14,22 @@ class ResourceFilterValidationNotification
     private bool $passes;
 
     /**
+     * Missing required filtering
+     *
      * @var string[]
      */
     private array $missingRequiredFiltering;
 
     /**
+     * The filtering passed in is invalid.
+     *
      * @var string[]
      */
     private array $invalidFiltering;
 
     /**
+     * The filtering passed in contains invalid value.
+     *
      * @var InvalidFilteringValue[]
      */
     private array $invalidFilteringValue;
@@ -47,7 +53,7 @@ class ResourceFilterValidationNotification
     }
 
     /**
-     * @return string[]
+     * @return array
      */
     public function toArray(): array
     {

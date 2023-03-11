@@ -2,14 +2,18 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi;
 
+use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Numerics;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\ResourceFilterable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Exceptions\FieldSelectorSyntaxErrorException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\FieldSelectable;
+use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\ResourceOffsetPaginate;
 
 class AlchemistRestfulApi
 {
-    use FieldSelectable, ResourceFilterable;
+    use FieldSelectable,
+        ResourceFilterable,
+        ResourceOffsetPaginate;
 
     /**
      * @param array $requestInput
@@ -19,14 +23,22 @@ class AlchemistRestfulApi
     public function __construct(array $requestInput)
     {
         if (isset($requestInput['fields']) && ! is_string($requestInput['fields'])) {
-            throw new AlchemistRestfulApiException('The `fields` parameter must be type of string');
+            throw new AlchemistRestfulApiException('The `fields` request input parameter must be type of string');
         }
         if (isset($requestInput['filtering']) && ! is_array($requestInput['filtering'])) {
-            throw new AlchemistRestfulApiException('The `filtering` parameter must be type of array');
+            throw new AlchemistRestfulApiException('The `filtering` request input parameter must be type of array');
+        }
+        if (isset($requestInput['limit']) && ! Numerics::isIntegerValue($requestInput['limit'])) {
+            throw new AlchemistRestfulApiException('The `limit` request input parameter must be type of integer');
+        }
+        if (isset($requestInput['offset']) && ! Numerics::isIntegerValue($requestInput['offset'])) {
+            throw new AlchemistRestfulApiException('The `offset` request input parameter must be type of integer');
         }
 
         $this->initFieldSelector($requestInput['fields'] ?? '');
 
         $this->initResourceFilter($requestInput['filtering'] ?? []);
+
+        $this->initResourceOffsetPaginator($requestInput['limit'] ?? 0, $requestInput['offset'] ?? 0);
     }
 }

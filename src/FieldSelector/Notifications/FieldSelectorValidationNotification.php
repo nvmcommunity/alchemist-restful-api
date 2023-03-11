@@ -119,6 +119,4 @@ class FieldSelectorValidationNotification
     {
         return ! empty($this->subsidiarySelectErrors);
     }
-
-
 }
