@@ -58,12 +58,4 @@ class OffsetPaginateObject
     {
         return $this->limit;
     }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->name;
-    }
 }

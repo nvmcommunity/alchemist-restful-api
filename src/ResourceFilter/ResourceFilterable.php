@@ -12,7 +12,7 @@ trait ResourceFilterable
      * @param array $filtering
      * @return void
      */
-    public function initResourceFilter(array $filtering): void
+    private function initResourceFilter(array $filtering): void
     {
         $this->resourceFilter = new ResourceFilter($filtering);
     }

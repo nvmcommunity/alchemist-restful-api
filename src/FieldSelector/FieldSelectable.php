@@ -16,7 +16,7 @@ trait FieldSelectable
      * @return void
      * @throws FieldSelectorSyntaxErrorException
      */
-    public function initFieldSelector(string $fields): void
+    private function initFieldSelector(string $fields): void
     {
         $this->fieldSelector = new FieldSelector($fields);
     }

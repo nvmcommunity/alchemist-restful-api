@@ -15,7 +15,7 @@ trait ResourceOffsetPaginate
      * @param int $limit
      * @return void
      */
-    public function initResourceOffsetPaginator(int $limit, int $offset): void
+    private function initResourceOffsetPaginator(int $limit, int $offset): void
     {
         $this->resourceOffsetPaginator = new ResourceOffsetPaginator($limit, $offset);
     }
