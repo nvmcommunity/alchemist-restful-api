@@ -10,9 +10,14 @@ A feature-rich library implementing RESTful API interface for PHP.
 
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
-- [Basic usage](#basic-usage)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+- [Basic usage](#basic-usage)
+  - [Field Selector](#field-selector)
+  - [Resource Filtering](#resource-filtering)
+  - [Resource Pagination](#resource-pagination)
+  - [Resource Search](#resource-search)
+  - [Resource Sort](#resource-sort)
 - [Todos](#todos)
 - [License](#license)
 
@@ -33,9 +38,13 @@ composer require nvmcommunity/alchemist-restful-api
 
 ## Basic usage
 
+This library acts as a layer that processes input parameters from the API client and returns the corresponding object results based on the parameters passed for processing in the later stage.
+
+Based on the modular design concept, this library is divided into separate modules that handle independently to each other, from receiving request input parameters to validating data and returning corresponding results.
+
 ### Field Selector
 
-The `FieldSelector` is one of the features of Alchemist Restful API, it allows your API client selecting the fields that they want retrieved, ensuring that all retrieved fields are within your control. In addition, you can do the same with subsidiary fields.
+The Field Selector is one of the features of Alchemist Restful API, it allows your API client selecting the fields that they want retrieved, ensuring that all retrieved fields are within your control. In addition, you can do the same with subsidiary fields.
 
 ```php
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
@@ -247,6 +256,66 @@ $offsetPaginate = $resourceOffsetPaginator->offsetPaginate();
 
 // Combine with the use of an ORM/Query Builder
 $result = ExampleOrderQueryBuilder::limit($offsetPaginate->getLimit())->offset($offsetPaginate->getOffset())->get();
+```
+
+## Resource Search
+
+When filtering through filter, the API client needs to clearly specify the filtering criteria. However, in the case of searching, the API client only needs to pass in the value to be searched for, and the backend will automatically define the filtering criteria from within.
+
+```php
+$restfulApi = new AlchemistRestfulApi([
+    // The search are passed in from the request input.
+    'search' => 'clothes hanger',
+]);
+
+$resourceSearch = $restfulApi->resourceSearch()
+    // define the search criteria
+    ->defineSearchCondition('product_name');
+    
+$search = $resourceSearch->search();
+
+// Combine with the use of an ORM/Query Builder
+ExampleOrderQueryBuilder::where($search->getSearchCondition(), 'like', "%{$search->getSearchValue()}%");
+```
+
+## Resource Sort
+
+Support for flexible result returns with data sorted based on the sort and direction specified by the API client.
+
+```php
+$restfulApi = new AlchemistRestfulApi([
+    // The sort and direction are passed in from the request input.
+    'sort' => 'id',
+    'direction' => 'desc',
+]);
+
+$resourceSort = $restfulApi->resourceSort()
+    // define default sort field
+    ->defineDefaultSort('id')
+    
+    // define default sort direction
+    ->defineDefaultDirection('desc')
+
+    // define list of field that client able to sort
+    ->defineSortableFields(['id', 'created_at']);
+
+if (! $resourceSort->validate($notification)->passes()) {
+    //var_dump($notification);
+
+    // Note: $notification object is set of aggregated errors,
+    // you need to implement your own comprehensive error message,
+    // combined with your own multilingual support.
+
+    echo "validate failed"; die();
+}
+
+$sort = $resourceSort->sort();
+
+// Combine with the use of an ORM/Query Builder
+
+if (! empty($sort->getSortField())) {
+    ExampleOrderQueryBuilder::orderBy($sort->getSortField(), $sort->getDirection());
+}
 ```
 
 ## Todos

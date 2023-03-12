@@ -1,8 +1,8 @@
 <?php
 
-namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Notifications;
+namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Notifications;
 
-class ResourceSortValidationNotification
+class ResourceSearchValidationNotification
 {
     /**
      * Has passed all the tests.
@@ -14,20 +14,14 @@ class ResourceSortValidationNotification
      * @var bool
      */
     private bool $invalidDirection;
-    /**
-     * @var bool
-     */
-    private bool $invalidSortField;
 
     /**
      * @param bool $passes
      * @param bool $invalidDirection
-     * @param bool $invalidSortField
      */
-    public function __construct(bool $passes, bool $invalidDirection, bool $invalidSortField) {
+    public function __construct(bool $passes, bool $invalidDirection) {
         $this->passes = $passes;
         $this->invalidDirection = $invalidDirection;
-        $this->invalidSortField = $invalidSortField;
     }
 
     /**
@@ -38,7 +32,6 @@ class ResourceSortValidationNotification
         return [
             'passes' => $this->passes,
             'invalid_direction' => $this->invalidDirection,
-            'invalid_sort_field' => $this->invalidSortField,
         ];
     }
 
@@ -56,13 +49,5 @@ class ResourceSortValidationNotification
     public function isInvalidDirection(): bool
     {
         return $this->invalidDirection;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isInvalidSortField(): bool
-    {
-        return $this->invalidSortField;
     }
 }

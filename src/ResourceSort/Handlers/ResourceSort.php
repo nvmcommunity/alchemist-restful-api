@@ -83,24 +83,25 @@ class ResourceSort
         $passes = true;
 
         $invalidDirection = false;
+        $invalidSortField = false;
 
         if (! in_array($this->direction, ['asc', 'desc'], true)) {
             $passes = false;
             $invalidDirection = true;
         }
 
-        if (! in_array($this->direction, ['asc', 'desc'], true)) {
+        if (! empty($this->sortableFields) && ! in_array($this->sortField, $this->sortableFields, true)) {
             $passes = false;
-            $invalidDirection = true;
+            $invalidSortField = true;
         }
 
-        return $notification = new ResourceSortValidationNotification($passes, $invalidDirection);
+        return $notification = new ResourceSortValidationNotification($passes, $invalidDirection, $invalidSortField);
     }
 
     /**
      * @return ResourceSortObject
      */
-    public function resourceSort(): ResourceSortObject
+    public function sort(): ResourceSortObject
     {
         return new ResourceSortObject(
             $this->sortField ?: $this->defaultSortField,
