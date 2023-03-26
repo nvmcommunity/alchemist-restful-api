@@ -322,10 +322,130 @@ $search = $resourceSearch->search();
 ExampleOrderQueryBuilder::where($search->getSearchCondition(), 'like', "%{$search->getSearchValue()}%");
 ```
 
+## Combine all definitions
+
+In the "basic concept" section, we have been provided with detailed usage of each module of this library. In reality, we
+will be doing everything at once, so the following instructions are an example of how we can easily implement an API.
+
+### Step 1: Define all the details about an API
+Define all the details of an API on the same class, apply polymorphism in object-oriented programming.
+
+```php
+<?php
+
+use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\AlchemistQueryable;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers\ResourceFilter;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringRules;
+use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Handlers\ResourceOffsetPaginator;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers\ResourceSearch;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Handlers\ResourceSort;
+/**
+ * Example of Order Api Query
+ */
+class OrderApiQuery extends AlchemistQueryable
+{
+    /**
+     * @param FieldSelector $fieldSelector
+     * @return void
+     */
+    public static function fieldSelector(FieldSelector $fieldSelector): void
+    {
+        $fieldSelector->defineSelectableFields([
+            'id', 'order_date', 'order_status', 'order_items'
+        ]);
+    }
+
+    /**
+     * @param ResourceFilter $resourceFilter
+     * @return void
+     */
+    public static function resourceFilter(ResourceFilter $resourceFilter): void
+    {
+        $resourceFilter->defineFilteringRules([
+            FilteringRules::String('product_name', ['eq', 'contains']),
+            FilteringRules::Date('order_date', ['eq', 'lte', 'gte'], ['Y-m-d']),
+            FilteringRules::Integer('product_id', ['eq']),
+            FilteringRules::Boolean('is_best_sales', ['eq']),
+        ]);
+    }
+
+    /**
+     * @param ResourceOffsetPaginator $resourceOffsetPaginator
+     * @return void
+     */
+    public static function resourceOffsetPaginator(ResourceOffsetPaginator $resourceOffsetPaginator): void
+    {
+        $resourceOffsetPaginator
+            ->defineMaxLimit(1000);
+    }
+
+    /**
+     * @param ResourceSearch $resourceSearch
+     * @return void
+     */
+    public static function resourceSearch(ResourceSearch $resourceSearch): void
+    {
+        $resourceSearch
+            ->defineSearchCondition('product_name');
+    }
+
+    /**
+     * @param ResourceSort $resourceSort
+     * @return void
+     */
+    public static function resourceSort(ResourceSort $resourceSort): void
+    {
+        $resourceSort
+            ->defineDefaultSort('id')
+            ->defineDefaultDirection('desc')
+            ->defineSortableFields(['id', 'created_at']);
+    }
+}
+```
+### Step 2: Extract the detailed definitions of an API.
+
+Extract details of an API taken from any class that implements AlchemistQueryable.
+
+```php
+<?php
+
+use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
+
+// Input from the client.
+$input = [
+    'fields' => 'id,order_date,order_status,order_items{product_id,product_name,quality}',
+    'filtering' => [
+        'order_date:lte' => '2023-02-26',
+        'product_name:contains' => 'clothes hanger'
+    ],
+    'search' => 'clothes hanger',
+    'sort' => 'id',
+    'direction' => 'desc',
+    'offset' => 0,
+    'limit' => 10,
+];
+
+$restfulApi = AlchemistRestfulApi::for(OrderApiQuery::class, $input);
+
+// Check all errors
+if (! $restfulApi->validate($errorbag)->passes()) {
+    var_dump($errorbag);
+}
+
+// Warning: The following code is just pseudo-code aimed at making it easy to visualize how to use this library.
+// You need to implement it yourself to achieve the desired functionality.
+$result = ExampleOrderQueryBuilder::select($fieldSelector->flatFields($withOutFields = ['order_items']))
+            ->where($conditions)->get()
+            ->limit($offsetPaginate->getLimit())->offset($offsetPaginate->getOffset())
+            ->orderBy($sort->getSortField(), $sort->getDirection());
+            ->where($search->getSearchCondition(), 'like', "%{$search->getSearchValue()}%")->get();
+
+```
+
 ## Todos
 
 - [x] Document of basic concepts
-- [ ] Adding Feature: Pagination, Search, Sorting
 - [ ] Integration with Laravel Framework
 
 ## License
