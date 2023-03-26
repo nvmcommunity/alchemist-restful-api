@@ -166,7 +166,7 @@ $result = ExampleOrderQueryBuilder::where($conditions)->get();
 var_dump($resourceFilter->filtering());
 ```
 
-### Filtering Rules
+#### Filtering Rules
 
 A Filtering Rules Object is used to define filtering with the following information:
 
@@ -201,7 +201,7 @@ FilteringRules::Enum(string $filtering, array $supportedOperators, array $enums)
 FilteringRules::Boolean(string $filtering, array $supportedOperators = [])
 ```
 
-### Filtering operators
+#### Filtering operators
 
 Filtering with operator in request input can be represented in form of: `<filtering>:<operator>`
 
@@ -227,7 +227,7 @@ This table also describes the structure of filtering values for special data typ
 
 _(*) Be careful with this operation, you need to handle additional processing to convert it to the native operator of the database management system._
 
-## Resource Pagination
+### Resource Pagination
 
 Support pagination through the offset and limit mechanism.
 
@@ -263,7 +263,7 @@ $offsetPaginate = $resourceOffsetPaginator->offsetPaginate();
 $result = ExampleOrderQueryBuilder::limit($offsetPaginate->getLimit())->offset($offsetPaginate->getOffset())->get();
 ```
 
-## Resource Sort
+### Resource Sort
 
 Support for flexible result returns with data sorted based on the sort and direction specified by the API client.
 
@@ -303,7 +303,7 @@ if (! empty($sort->getSortField())) {
 }
 ```
 
-## Resource Search
+### Resource Search
 
 When filtering through filter, the API client needs to clearly specify the filtering criteria. However, in the case of searching, the API client only needs to pass in the value to be searched for, and the backend will automatically define the filtering criteria from within.
 
