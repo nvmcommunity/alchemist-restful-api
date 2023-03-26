@@ -1,14 +1,14 @@
 <?php
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSearch;
 
-use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers\ResourceSeach;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers\ResourceSearch;
 
 trait ResourceSearchable
 {
     /**
-     * @var ResourceSeach
+     * @var ResourceSearch
      */
-    private ResourceSeach $resourceSearch;
+    private ResourceSearch $resourceSearch;
 
     /**
      * @param string $search
@@ -16,13 +16,13 @@ trait ResourceSearchable
      */
     private function initResourceSearch(string $search): void
     {
-        $this->resourceSearch = new ResourceSeach($search);
+        $this->resourceSearch = new ResourceSearch($search);
     }
 
     /**
-     * @return ResourceSeach
+     * @return ResourceSearch
      */
-    public function resourceSearch(): ResourceSeach
+    public function resourceSearch(): ResourceSearch
     {
         return $this->resourceSearch;
     }

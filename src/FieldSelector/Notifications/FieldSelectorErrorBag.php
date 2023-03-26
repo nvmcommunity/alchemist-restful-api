@@ -2,7 +2,7 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications;
 
-class FieldSelectorValidationNotification
+class FieldSelectorErrorBag
 {
     /**
      * Has passed all the tests.

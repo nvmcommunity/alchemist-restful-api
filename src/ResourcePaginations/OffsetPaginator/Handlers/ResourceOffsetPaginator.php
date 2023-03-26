@@ -2,7 +2,7 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Handlers;
 
-use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Notifications\ResourceOffsetPaginationValidationNotification;
+use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Notifications\ResourceOffsetPaginationErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Objects\OffsetPaginateObject;
 
 class ResourceOffsetPaginator
@@ -51,9 +51,9 @@ class ResourceOffsetPaginator
 
     /**
      * @param $notification
-     * @return ResourceOffsetPaginationValidationNotification
+     * @return ResourceOffsetPaginationErrorBag
      */
-    public function validate(&$notification = null): ResourceOffsetPaginationValidationNotification
+    public function validate(&$notification = null): ResourceOffsetPaginationErrorBag
     {
         $passes = true;
         $isNegativeOffset = false;
@@ -69,6 +69,6 @@ class ResourceOffsetPaginator
             $isNegativeOffset = true;
         }
 
-        return $notification = new ResourceOffsetPaginationValidationNotification($passes, $maxLimitReached, $isNegativeOffset);
+        return $notification = new ResourceOffsetPaginationErrorBag($passes, $maxLimitReached, $isNegativeOffset);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Notifications;
 
-class ResourceSortValidationNotification
+class ResourceSortErrorBag
 {
     /**
      * Has passed all the tests.

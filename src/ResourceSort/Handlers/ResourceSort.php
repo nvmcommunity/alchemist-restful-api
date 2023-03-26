@@ -2,7 +2,7 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Handlers;
 
-use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Notifications\ResourceSortValidationNotification;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Notifications\ResourceSortErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Objects\ResourceSortObject;
 
 /**
@@ -76,9 +76,9 @@ class ResourceSort
 
     /**
      * @param $notification
-     * @return ResourceSortValidationNotification
+     * @return ResourceSortErrorBag
      */
-    public function validate(&$notification = null): ResourceSortValidationNotification
+    public function validate(&$notification = null): ResourceSortErrorBag
     {
         $passes = true;
 
@@ -95,7 +95,7 @@ class ResourceSort
             $invalidSortField = true;
         }
 
-        return $notification = new ResourceSortValidationNotification($passes, $invalidDirection, $invalidSortField);
+        return $notification = new ResourceSortErrorBag($passes, $invalidDirection, $invalidSortField);
     }
 
     /**

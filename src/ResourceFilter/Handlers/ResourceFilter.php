@@ -4,7 +4,7 @@ namespace Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers;
 
 use Closure;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Arrays;
-use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Notifications\ResourceFilterValidationNotification;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Notifications\ResourceFilterErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Exceptions\FilteringException;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Exceptions\FilteringInvalidException;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Exceptions\FilteringInvalidRuleException;
@@ -166,7 +166,7 @@ class ResourceFilter
     }
 
     /**
-     * @return array
+     * @return FilteringObject[]
      */
     public function filtering(): array
     {
@@ -203,9 +203,9 @@ class ResourceFilter
 
     /**
      * @param mixed $notification
-     * @return ResourceFilterValidationNotification
+     * @return ResourceFilterErrorBag
      */
-    public function validate(&$notification = null): ResourceFilterValidationNotification
+    public function validate(&$notification = null): ResourceFilterErrorBag
     {
         $optionValidationNotification = $this->validateOption();
 
@@ -215,7 +215,7 @@ class ResourceFilter
 
         $validateFiltering = $this->validateFiltering();
 
-        return $notification = new ResourceFilterValidationNotification(
+        return $notification = new ResourceFilterErrorBag(
             false, $optionValidationNotification->getMissingRequiredFiltering(),
             $validateFiltering->getInvalidFiltering(),
             $validateFiltering->getInvalidFilteringValue(),
@@ -403,25 +403,25 @@ class ResourceFilter
     }
 
     /**
-     * @return ResourceFilterValidationNotification
+     * @return ResourceFilterErrorBag
      */
-    private function validateFiltering(): ResourceFilterValidationNotification
+    private function validateFiltering(): ResourceFilterErrorBag
     {
         return $this->validateRecursiveFiltering($this->filtering);
     }
 
     /**
-     * @return ResourceFilterValidationNotification
+     * @return ResourceFilterErrorBag
      */
-    private function validateOption(): ResourceFilterValidationNotification
+    private function validateOption(): ResourceFilterErrorBag
     {
         $option = $this->getFilteringOption();
 
         if ($option && ! empty($validateOptionRequired = $this->validateOptionRequired())) {
-            return new ResourceFilterValidationNotification(false, $validateOptionRequired);
+            return new ResourceFilterErrorBag(false, $validateOptionRequired);
         }
 
-        return new ResourceFilterValidationNotification(true);
+        return new ResourceFilterErrorBag(true);
 
     }
 
@@ -802,9 +802,9 @@ class ResourceFilter
      * @param array $filtering
      * @param FilteringRules|null $filteringRuleGroup
      * @param string|null $filteringGroupTitle
-     * @return ResourceFilterValidationNotification
+     * @return ResourceFilterErrorBag
      */
-    private function validateRecursiveFiltering(array $filtering, ?FilteringRules $filteringRuleGroup = null, ?string $filteringGroupTitle = null): ResourceFilterValidationNotification
+    private function validateRecursiveFiltering(array $filtering, ?FilteringRules $filteringRuleGroup = null, ?string $filteringGroupTitle = null): ResourceFilterErrorBag
     {
         $filteringErrors = [];
 
@@ -851,10 +851,10 @@ class ResourceFilter
         }
 
         if (! empty($filteringErrors)) {
-            return new ResourceFilterValidationNotification(false, [], $filteringErrors['invalid_filtering'] ?? [], $filteringErrors['invalid_filtering_value'] ?? []);
+            return new ResourceFilterErrorBag(false, [], $filteringErrors['invalid_filtering'] ?? [], $filteringErrors['invalid_filtering_value'] ?? []);
         }
 
-        return new ResourceFilterValidationNotification(true);
+        return new ResourceFilterErrorBag(true);
     }
 
     /**

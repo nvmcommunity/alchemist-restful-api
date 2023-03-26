@@ -58,6 +58,9 @@ $restfulApi = new AlchemistRestfulApi([
 // Call `$restfulApi->fieldSelector()` to start the field selector builder, then your API definitions can be
 // defined based on the chain of builder.
 $fieldSelector = $restfulApi->fieldSelector()
+    // If no field is passed up by the API Client, the default field will present.
+    ->defineDefaultFields(['id'])
+    
     // Your API client can be able to retrieve any fields in the list
     ->defineSelectableFields([
         'id', 'order_date', 'order_status', 'order_items'
@@ -72,8 +75,9 @@ $fieldSelector = $restfulApi->fieldSelector()
 // whether the selected fields are in the list of "selectable" fields, the same for subsidiary fields, and also
 // whether your API client is selecting subsidiary fields on atomic fields that do not have subsidiary fields,
 // for example: "id{something}", where id is an atomic field and has no subsidiary fields.
-if (! $fieldSelector->validate($notification)->passes()) {
-    // var_dump($notification);
+
+if (! $restfulApi->validate($errorBag)->passes()) {
+    // var_dump($errorBag);
     
     // Note: $notification object is set of aggregated errors,
     // you need to implement your own comprehensive error message,
@@ -100,6 +104,7 @@ As a core feature of Alchemist Restful API, it focuses on checking whether the f
 ```php
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringRules;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringOptions;
 
 $restfulApi = new AlchemistRestfulApi([
     // The filtering are passed in from the request input.
@@ -139,8 +144,8 @@ $resourceFilter = $restfulApi->resourceFilter()
 $resourceFilter->addFilteringIfNotExists('is_best_sales', 'eq', 1);
 
 // Validate your API client filtering, the same concept with field selector above
-if (! $resourceFilter->validate($notification)->passes()) {
-    // var_dump($notification);
+if (! $restfulApi->validate($errorBag)->passes()) {
+    // var_dump($errorBag);
 
     // Note: $notification object is set of aggregated errors,
     // you need to implement your own comprehensive error message,
@@ -258,26 +263,6 @@ $offsetPaginate = $resourceOffsetPaginator->offsetPaginate();
 $result = ExampleOrderQueryBuilder::limit($offsetPaginate->getLimit())->offset($offsetPaginate->getOffset())->get();
 ```
 
-## Resource Search
-
-When filtering through filter, the API client needs to clearly specify the filtering criteria. However, in the case of searching, the API client only needs to pass in the value to be searched for, and the backend will automatically define the filtering criteria from within.
-
-```php
-$restfulApi = new AlchemistRestfulApi([
-    // The search are passed in from the request input.
-    'search' => 'clothes hanger',
-]);
-
-$resourceSearch = $restfulApi->resourceSearch()
-    // define the search criteria
-    ->defineSearchCondition('product_name');
-    
-$search = $resourceSearch->search();
-
-// Combine with the use of an ORM/Query Builder
-ExampleOrderQueryBuilder::where($search->getSearchCondition(), 'like', "%{$search->getSearchValue()}%");
-```
-
 ## Resource Sort
 
 Support for flexible result returns with data sorted based on the sort and direction specified by the API client.
@@ -299,8 +284,8 @@ $resourceSort = $restfulApi->resourceSort()
     // define list of field that client able to sort
     ->defineSortableFields(['id', 'created_at']);
 
-if (! $resourceSort->validate($notification)->passes()) {
-    //var_dump($notification);
+if (! $restfulApi->validate($errorBag)->passes()) {
+    // var_dump($errorBag);
 
     // Note: $notification object is set of aggregated errors,
     // you need to implement your own comprehensive error message,
@@ -316,6 +301,26 @@ $sort = $resourceSort->sort();
 if (! empty($sort->getSortField())) {
     ExampleOrderQueryBuilder::orderBy($sort->getSortField(), $sort->getDirection());
 }
+```
+
+## Resource Search
+
+When filtering through filter, the API client needs to clearly specify the filtering criteria. However, in the case of searching, the API client only needs to pass in the value to be searched for, and the backend will automatically define the filtering criteria from within.
+
+```php
+$restfulApi = new AlchemistRestfulApi([
+    // The search are passed in from the request input.
+    'search' => 'clothes hanger',
+]);
+
+$resourceSearch = $restfulApi->resourceSearch()
+    // define the search criteria
+    ->defineSearchCondition('product_name');
+    
+$search = $resourceSearch->search();
+
+// Combine with the use of an ORM/Query Builder
+ExampleOrderQueryBuilder::where($search->getSearchCondition(), 'like', "%{$search->getSearchValue()}%");
 ```
 
 ## Todos

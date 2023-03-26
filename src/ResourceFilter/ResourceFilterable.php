@@ -6,6 +6,9 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers\ResourceFilter;
 
 trait ResourceFilterable
 {
+    /**
+     * @var ResourceFilter
+     */
     private ResourceFilter $resourceFilter;
 
     /**

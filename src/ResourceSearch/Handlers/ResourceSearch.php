@@ -2,10 +2,10 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers;
 
-use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Notifications\ResourceSearchValidationNotification;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Notifications\ResourceSearchErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Objects\ResourceSearchObject;
 
-class ResourceSeach
+class ResourceSearch
 {
     /**
      * @var string
@@ -26,7 +26,7 @@ class ResourceSeach
 
     /**
      * @param string $condition
-     * @return ResourceSeach
+     * @return ResourceSearch
      */
     public function defineSearchCondition(string $condition): self
     {

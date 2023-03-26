@@ -2,7 +2,7 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Notifications;
 
-class ResourceSearchValidationNotification
+class ResourceSearchErrorBag
 {
     /**
      * Has passed all the tests.

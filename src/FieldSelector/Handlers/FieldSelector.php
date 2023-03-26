@@ -3,7 +3,7 @@
 namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers;
 
 use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Strings;
-use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications\FieldSelectorValidationNotification;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications\FieldSelectorErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Exceptions\FieldSelectorSyntaxErrorException;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\FieldObject;
@@ -18,7 +18,12 @@ class FieldSelector
     /**
      * @var string[]
      */
-    private array $selectableFields;
+    private array $selectableFields = [];
+
+    /**
+     * @var FieldObject[]
+     */
+    private array $defaultFields = [];
 
     /**
      * @var string[][]
@@ -31,7 +36,7 @@ class FieldSelector
      */
     public function __construct(string $fields)
     {
-        $this->parseFields($fields);
+        $this->fields = $this->parseFields($fields);
     }
 
     /**
@@ -41,6 +46,18 @@ class FieldSelector
     public function defineSelectableFields(array $selectableFields): self
     {
         $this->selectableFields = $selectableFields;
+
+        return $this;
+    }
+
+    /**
+     * @param string[] $fields
+     * @return FieldSelector
+     * @throws FieldSelectorSyntaxErrorException
+     */
+    public function defineDefaultFields(array $fields): self
+    {
+        $this->defaultFields = $this->parseFields(implode(',', $fields));
 
         return $this;
     }
@@ -77,7 +94,7 @@ class FieldSelector
             return $this->withoutFields($withoutFieldNames);
         }
 
-        return $this->fields;
+        return $this->fields ?: $this->defaultFields;
     }
 
     /**
@@ -89,7 +106,7 @@ class FieldSelector
 
         $withoutFieldsMap = array_flip($withoutFieldNames);
 
-        foreach ($this->fields as $field) {
+        foreach ($this->fields ?: $this->defaultFields as $field) {
             if (! array_key_exists($field->getName(), $withoutFieldsMap)) {
                 $fields[] = $field;
             }
@@ -107,7 +124,11 @@ class FieldSelector
             return [];
         }
 
-        return $this->fields[$fieldName]->getSubFields();
+        if ($this->fields) {
+            return $this->fields[$fieldName]->getSubFields();
+        }
+
+        return $this->defaultFields[$fieldName]->getSubFields();
     }
 
     /**
@@ -120,7 +141,7 @@ class FieldSelector
 
         $withoutFieldNameMap = array_flip($withoutFieldNames);
 
-        foreach ($this->fields as $fieldName => $fieldObj) {
+        foreach ($this->fields ?: $this->defaultFields as $fieldName => $fieldObj) {
             if (! array_key_exists($fieldName, $withoutFieldNameMap)) {
                 $excludedFields[$fieldName] = $fieldObj;
             }
@@ -131,9 +152,9 @@ class FieldSelector
 
     /**
      * @param $notification
-     * @return FieldSelectorValidationNotification
+     * @return FieldSelectorErrorBag
      */
-    public function validate(&$notification = null): FieldSelectorValidationNotification
+    public function validate(&$notification = null): FieldSelectorErrorBag
     {
         /** @var string[] $unselectableFields */
         $unselectableFields = [];
@@ -145,12 +166,14 @@ class FieldSelector
         $subsidiarySelectErrors = [];
 
         if (empty($this->selectableFields)) {
-            return $notification = new FieldSelectorValidationNotification(true);
+            return $notification = new FieldSelectorErrorBag(true);
         }
 
         $selectableFieldMap = array_flip($this->selectableFields);
 
-        foreach ($this->fields as $fieldName => $fieldObj) {
+        $fields = $this->fields ?: $this->defaultFields;
+
+        foreach ($fields as $fieldName => $fieldObj) {
             if (! array_key_exists($fieldName, $selectableFieldMap)) {
                 $unselectableFields[] = $fieldName;
 
@@ -181,20 +204,20 @@ class FieldSelector
         }
 
         if ($subsidiarySelectErrors) {
-            return $notification = new FieldSelectorValidationNotification(
+            return $notification = new FieldSelectorErrorBag(
                 false, $unselectableFields, $unselectableSubFields, $subsidiarySelectErrors
             );
         }
 
         if ($unselectableSubFields) {
-            return $notification = new FieldSelectorValidationNotification(false, $unselectableFields, $unselectableSubFields);
+            return $notification = new FieldSelectorErrorBag(false, $unselectableFields, $unselectableSubFields);
         }
 
         if ($unselectableFields) {
-            return $notification = new FieldSelectorValidationNotification(false, $unselectableFields);
+            return $notification = new FieldSelectorErrorBag(false, $unselectableFields);
         }
 
-        return $notification = new FieldSelectorValidationNotification(true);
+        return $notification = new FieldSelectorErrorBag(true);
     }
 
     /**
@@ -250,11 +273,13 @@ class FieldSelector
 
     /**
      * @param string $fields
-     * @return void
+     * @return FieldObject[]
      * @throws FieldSelectorSyntaxErrorException
      */
-    private function parseFields(string $fields): void
+    private function parseFields(string $fields): array
     {
+        $result = [];
+
         preg_match_all(
             '/(([\w\s]+)|(([\w\s]+)\.limit\(([\d\s]+)\){([\w,\s]+)?})|(([\w\s]+){([\w,\s]+)?}))(?:,|$)/',
             $fields,
@@ -275,8 +300,10 @@ class FieldSelector
                     $fieldName = Strings::start($field, '{');
                 }
 
-                $this->fields[$fieldName] = $this->parseOption($field);
+                $result[$fieldName] = $this->parseOption($field);
             }
         }
+
+        return $result;
     }
 }

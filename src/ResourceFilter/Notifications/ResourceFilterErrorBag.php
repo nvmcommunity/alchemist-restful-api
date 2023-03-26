@@ -4,7 +4,7 @@ namespace Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Notifications;
 
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\InvalidFilteringValue;
 
-class ResourceFilterValidationNotification
+class ResourceFilterErrorBag
 {
     /**
      * Has passed all the tests.

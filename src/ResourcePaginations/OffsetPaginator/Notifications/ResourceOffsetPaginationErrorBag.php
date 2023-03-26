@@ -2,7 +2,7 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Notifications;
 
-class ResourceOffsetPaginationValidationNotification
+class ResourceOffsetPaginationErrorBag
 {
     /**
      * Has passed all the tests.
