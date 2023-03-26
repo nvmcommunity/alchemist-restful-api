@@ -3,6 +3,7 @@
 namespace Nvmcommunity\Alchemist\RestfulApi;
 
 use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Numerics;
+use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\AlchemistQueryable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\ResourceFilterable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
@@ -90,7 +91,7 @@ class AlchemistRestfulApi
                 $passes = false;
             }
 
-            $errors->resourceFilter = $fieldSelectorErrorBag;
+            $errors->fieldSelector = $fieldSelectorErrorBag;
         }
 
         if ($this->isModuleEnable(ResourceFilterable::class)) {
@@ -119,6 +120,41 @@ class AlchemistRestfulApi
         }
 
         return $errorBag = new ErrorBag($passes, $errors);
+    }
+
+    /**
+     * @param string $className
+     * @param array $requestInput
+     * @return AlchemistRestfulApi
+     * @throws AlchemistRestfulApiException
+     */
+    public static function for(string $className, array $requestInput): self
+    {
+        /** @var AlchemistQueryable $className */
+
+        $instance = new self($requestInput);
+
+        if ($instance->isModuleEnable(FieldSelectable::class)) {
+            $className::fieldSelector($instance->fieldSelector());
+        }
+
+        if ($instance->isModuleEnable(ResourceFilterable::class)) {
+            $className::resourceFilter($instance->resourceFilter());
+        }
+
+        if ($instance->isModuleEnable(ResourceOffsetPaginate::class)) {
+            $className::resourceOffsetPaginator($instance->resourceOffsetPaginator());
+        }
+
+        if ($instance->isModuleEnable(ResourceSortable::class)) {
+            $className::resourceSort($instance->resourceSort());
+        }
+
+        if ($instance->isModuleEnable(ResourceSearchable::class)) {
+            $className::resourceSearch($instance->resourceSearch());
+        }
+
+        return $instance;
     }
 
     /**
