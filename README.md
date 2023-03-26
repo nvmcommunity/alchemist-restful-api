@@ -75,11 +75,10 @@ $fieldSelector = $restfulApi->fieldSelector()
 // whether the selected fields are in the list of "selectable" fields, the same for subsidiary fields, and also
 // whether your API client is selecting subsidiary fields on atomic fields that do not have subsidiary fields,
 // for example: "id{something}", where id is an atomic field and has no subsidiary fields.
-
 if (! $restfulApi->validate($errorBag)->passes()) {
     // var_dump($errorBag);
     
-    // Note: $notification object is set of aggregated errors,
+    // Note: $errorBag object contains set of aggregated errors,
     // you need to implement your own comprehensive error message,
     // combined with your own multilingual support.
     
@@ -147,7 +146,7 @@ $resourceFilter->addFilteringIfNotExists('is_best_sales', 'eq', 1);
 if (! $restfulApi->validate($errorBag)->passes()) {
     // var_dump($errorBag);
 
-    // Note: $notification object is set of aggregated errors,
+    // Note: $errorBag object contains set of aggregated errors,
     // you need to implement your own comprehensive error message,
     // combined with your own multilingual support.
     echo "validate failed"; die();
@@ -249,7 +248,7 @@ $resourceOffsetPaginator = $restfulApi->resourceOffsetPaginator()
 if (! $resourceOffsetPaginator->validate($notification)->passes()) {
     // var_dump($notification);
 
-    // Note: $notification object is set of aggregated errors,
+    // Note: $errorBag object contains set of aggregated errors,
     // you need to implement your own comprehensive error message,
     // combined with your own multilingual support.
 
@@ -287,7 +286,7 @@ $resourceSort = $restfulApi->resourceSort()
 if (! $restfulApi->validate($errorBag)->passes()) {
     // var_dump($errorBag);
 
-    // Note: $notification object is set of aggregated errors,
+    // Note: $errorBag object contains set of aggregated errors,
     // you need to implement your own comprehensive error message,
     // combined with your own multilingual support.
 
