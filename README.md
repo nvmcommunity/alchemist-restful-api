@@ -18,6 +18,7 @@ A feature-rich library implementing RESTful API interface for PHP.
   - [Resource Pagination](#resource-pagination)
   - [Resource Search](#resource-search)
   - [Resource Sort](#resource-sort)
+- [Combine all definitions](#combine-all-definitions)
 - [Todos](#todos)
 - [License](#license)
 
@@ -429,14 +430,16 @@ $input = [
 $restfulApi = AlchemistRestfulApi::for(OrderApiQuery::class, $input);
 
 // Check all errors
-if (! $restfulApi->validate($errorbag)->passes()) {
-    var_dump($errorbag);
+if (! $restfulApi->validate($errorBag)->passes()) {
+    // var_dump($errorBag);
+    
+    echo "validate failed"; die();
 }
 
 // Warning: The following code is just pseudo-code aimed at making it easy to visualize how to use this library.
 // You need to implement it yourself to achieve the desired functionality.
 $result = ExampleOrderQueryBuilder::select($fieldSelector->flatFields($withOutFields = ['order_items']))
-            ->where($conditions)->get()
+            ->where(array_map(static fn($filteringObj) => $filteringObj->flatArray(), $resourceFilter->filtering()))
             ->limit($offsetPaginate->getLimit())->offset($offsetPaginate->getOffset())
             ->orderBy($sort->getSortField(), $sort->getDirection());
             ->where($search->getSearchCondition(), 'like', "%{$search->getSearchValue()}%")->get();
