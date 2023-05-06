@@ -24,7 +24,7 @@
         }
     ],
     "require": {
-        "php": "~7.4",
+        "php": ">=7.4",
         "nette/utils": "^3.2"
     },
     "minimum-stability": "dev",
