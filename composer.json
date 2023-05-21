@@ -25,7 +25,8 @@
     ],
     "require": {
         "php": ">=7.4",
-        "nette/utils": "^3.2"
+        "nette/utils": "^3.2",
+        "psr/http-message": "^2.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
