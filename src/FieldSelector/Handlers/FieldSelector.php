@@ -14,7 +14,7 @@ class FieldSelector
     private array $fields;
 
     /**
-     * @var string[]
+     * @var array
      */
     private array $selectableFields = [];
 
@@ -35,7 +35,7 @@ class FieldSelector
      * @param array $selectableFields
      * @return FieldSelector
      */
-    public function defineSelectableFields(array $selectableFields): self
+    public function defineFieldStructure(array $selectableFields): self
     {
         $this->selectableFields = $this->parseSelectable($selectableFields);
 
@@ -53,19 +53,89 @@ class FieldSelector
         foreach ($selectableFields as $selectableFieldKey => $selectableFieldValue) {
             $isAtomicField = is_numeric($selectableFieldKey);
 
-            $fieldName = $isAtomicField ? $selectableFieldValue : $selectableFieldKey;
+            $fieldWithType = $this->parseFieldWithType(
+                $isAtomicField ? $selectableFieldValue : $selectableFieldKey,
+                is_array($selectableFieldValue)
+            );
+
+            $fieldName = $fieldWithType['field'];
+            $fieldType = $fieldWithType['type'];
 
             if ($isAtomicField) {
-                $res[$fieldName] = 1;
+                $res[$fieldName] = $fieldType;
             } else {
                 $subFields = $selectableFieldValue;
 
-                $res[$fieldName] = $this->parseSelectable($subFields);
+                $res[$fieldName] = [
+                    'type' => $fieldType,
+                    'sub' => $this->parseSelectable($subFields)
+                ];
             }
         }
 
         return $res;
     }
+
+    /**
+     * @param string $fieldWithType
+     * @param bool $isObject
+     * @return string[]
+     */
+    private function parseFieldWithType(string $fieldWithType, bool $isObject): array
+    {
+        $fieldWithTypeArr = explode('@', $fieldWithType);
+
+        if (empty($fieldWithTypeArr[1])) {
+            return ['field' => $fieldWithType, 'type' => $isObject ? 'object' : 'atomic'];
+        }
+
+        return ['field' => $fieldWithTypeArr[0], 'type' => $fieldWithTypeArr[1]];
+    }
+
+    /**
+     * @return array
+     */
+    public function sampleStructure(): array
+    {
+        return $this->deepSampleStructure($this->selectableFields);
+    }
+
+    /**
+     * @param array $fields
+     * @return array
+     */
+    private function deepSampleStructure(array $fields): array
+    {
+        $res = [];
+
+        foreach ($fields as $field => $value) {
+            if (is_string($value)) {
+                $res[$field] = $this->sampleGenerator($value);
+            } else {
+                $res[$field] = $this->deepSampleStructure($value['sub']);
+            }
+        }
+
+        return $res;
+    }
+
+    /**
+     * @param string $type
+     * @return mixed
+     */
+    private function sampleGenerator(string $type)
+    {
+        $sampleType = [
+            'atomic' => fn() => "",
+            'date' => fn() => "",
+            'datetime' => fn() => "",
+            'integer' => fn() => 0,
+            'string' => fn() => 0,
+        ];
+
+        return $sampleType[$type]();
+    }
+
 
     /**
      * @param string[] $fields
@@ -221,16 +291,15 @@ class FieldSelector
             if (! empty($diffWithSelectableFields)) {
                 $isFieldValid = false;
 
-                $errors = ['namespace' => $namespace, 'fields' => array_keys(array_map(fn(FieldObject $item) => 1, $diffWithSelectableFields))];
+                $errors = ['namespace' => $namespace, 'fields' => array_keys(array_map(fn(FieldObject $item) => 'ignored', $diffWithSelectableFields))];
 
                 break;
             }
-
             if ($fieldObject->getSubFields()) {
                 return $this->deepCompareSelectableFields(
                     "$namespace.{$fieldObject->getName()}",
                     $fieldObject->getSubFields(),
-                    $selectableFields[$fieldObject->getName()],
+                    $selectableFields[$fieldObject->getName()]['sub'],
                     $errors
                 );
             }

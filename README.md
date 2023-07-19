@@ -63,7 +63,7 @@ $fieldSelector = $restfulApi->fieldSelector()
     ->defineDefaultFields(['id'])
     
     // Your API client can be able to retrieve any fields in the list
-    ->defineSelectableFields([
+    ->defineFieldStructure([
             'id',
             'order_date',
             'order_status',
@@ -355,7 +355,7 @@ class OrderApiQuery extends AlchemistQueryable
      */
     public static function fieldSelector(FieldSelector $fieldSelector): void
     {
-        $fieldSelector->defineSelectableFields([
+        $fieldSelector->defineFieldStructure([
             'id',
             'order_date',
             'order_status',
