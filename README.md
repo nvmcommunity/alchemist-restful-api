@@ -64,13 +64,16 @@ $fieldSelector = $restfulApi->fieldSelector()
     
     // Your API client can be able to retrieve any fields in the list
     ->defineSelectableFields([
-        'id', 'order_date', 'order_status', 'order_items'
-    ])
-    
-    // Defining the list of subsidiary field of `order_items` field
-    ->defineSelectableSubFields('order_items', [
-        'id', 'product_id', 'product_name', 'quality', 'price'
-    ]);
+            'id',
+            'order_date',
+            'order_status',
+            'order_items'   => [
+                'item_id',
+                'product_id',
+                'price',
+                'quantity'
+            ]
+        ]);
 
 // The important thing here is that your API will be rigorously checked by the validator, which will check things like
 // whether the selected fields are in the list of "selectable" fields, the same for subsidiary fields, and also
@@ -353,7 +356,15 @@ class OrderApiQuery extends AlchemistQueryable
     public static function fieldSelector(FieldSelector $fieldSelector): void
     {
         $fieldSelector->defineSelectableFields([
-            'id', 'order_date', 'order_status', 'order_items'
+            'id',
+            'order_date',
+            'order_status',
+            'order_items'   => [
+                'item_id',
+                'product_id',
+                'price',
+                'quantity'
+            ]
         ]);
     }
 
@@ -415,7 +426,7 @@ use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 
 // Input from the client.
 $input = [
-    'fields' => 'id,order_date,order_status,order_items{product_id,product_name,quality}',
+    'fields' => 'id,order_date,order_status,order_items{item_id,product_id,price,quantity}',
     'filtering' => [
         'order_date:lte' => '2023-02-26',
         'product_name:contains' => 'clothes hanger'

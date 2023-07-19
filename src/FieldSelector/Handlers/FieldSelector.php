@@ -2,9 +2,7 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers;
 
-use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Strings;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications\FieldSelectorErrorBag;
-use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Exceptions\FieldSelectorSyntaxErrorException;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\FieldObject;
 
@@ -26,13 +24,7 @@ class FieldSelector
     private array $defaultFields = [];
 
     /**
-     * @var string[][]
-     */
-    private array $selectableSubFields = [];
-
-    /**
      * @param string $fields
-     * @throws FieldSelectorSyntaxErrorException
      */
     public function __construct(string $fields)
     {
@@ -40,20 +32,44 @@ class FieldSelector
     }
 
     /**
-     * @param string[] $selectableFields
+     * @param array $selectableFields
      * @return FieldSelector
      */
     public function defineSelectableFields(array $selectableFields): self
     {
-        $this->selectableFields = $selectableFields;
+        $this->selectableFields = $this->parseSelectable($selectableFields);
 
         return $this;
     }
 
     /**
+     * @param array $selectableFields
+     * @return array
+     */
+    private function parseSelectable(array $selectableFields): array
+    {
+        $res = [];
+
+        foreach ($selectableFields as $selectableFieldKey => $selectableFieldValue) {
+            $isAtomicField = is_numeric($selectableFieldKey);
+
+            $fieldName = $isAtomicField ? $selectableFieldValue : $selectableFieldKey;
+
+            if ($isAtomicField) {
+                $res[$fieldName] = 1;
+            } else {
+                $subFields = $selectableFieldValue;
+
+                $res[$fieldName] = $this->parseSelectable($subFields);
+            }
+        }
+
+        return $res;
+    }
+
+    /**
      * @param string[] $fields
      * @return FieldSelector
-     * @throws FieldSelectorSyntaxErrorException
      */
     public function defineDefaultFields(array $fields): self
     {
@@ -63,91 +79,113 @@ class FieldSelector
     }
 
     /**
-     * @param string $fieldName
-     * @param string[] $selectableSubFields
-     * @return FieldSelector
+     * @param string $namespace
+     * @param string[] $withFieldNames
+     * @return FieldObject[]
      * @throws AlchemistRestfulApiException
      */
-    public function defineSelectableSubFields(string $fieldName, array $selectableSubFields): self
+    public function fields(string $namespace = '$', array $withFieldNames = []): array
     {
-        if (empty($this->selectableFields)) {
-            throw new AlchemistRestfulApiException('You need to define the selectable fields first.');
-        }
+        $fields = $this->fields ?: $this->defaultFields;
 
-        if (! in_array($fieldName, $this->selectableFields, true)) {
+        $namespaceFields = $this->namespaceFields($fields, $namespace);
+
+        if (! $namespaceFields) {
             throw new AlchemistRestfulApiException(
-                sprintf('The declared field (%s) is not in the selectable fields.', $fieldName)
+                sprintf("cannot find fields with `%s` namespace", $namespace)
             );
         }
 
-        $this->selectableSubFields[$fieldName] = $selectableSubFields;
 
-        return $this;
-    }
-
-    /**
-     * @return FieldObject[]
-     */
-    public function fields(array $withoutFieldNames = []): array
-    {
-        if (! empty($withoutFieldNames)) {
-            return $this->withoutFields($withoutFieldNames);
+        if (empty($withFieldNames)) {
+            return $namespaceFields;
         }
 
-        return $this->fields ?: $this->defaultFields;
-    }
+        $result = [];
 
-    /**
-     * @return string[]
-     */
-    public function flatFields(array $withoutFieldNames = []): array
-    {
-        $fields = [];
+        $includeFieldNamesMap = array_flip($withFieldNames);
 
-        $withoutFieldsMap = array_flip($withoutFieldNames);
-
-        foreach ($this->fields ?: $this->defaultFields as $field) {
-            if (! array_key_exists($field->getName(), $withoutFieldsMap)) {
-                $fields[] = $field;
+        foreach ($namespaceFields as $fieldName => $fieldObj) {
+            if (array_key_exists($fieldName, $includeFieldNamesMap)) {
+                $result[$fieldName] = $fieldObj;
             }
         }
 
-        return array_map(static fn($field) => (string) $field, $fields);
+        return $result;
     }
 
     /**
+     * @param string $namespace
+     * @param string[] $withFieldNames
      * @return string[]
+     * @throws AlchemistRestfulApiException
      */
-    public function subFields(string $fieldName): array
+    public function flatFields(string $namespace = '$', array $withFieldNames = []): array
     {
-        if (! array_key_exists($fieldName, $this->fields)) {
-            return [];
+        $fields = $this->fields($namespace, $withFieldNames);
+
+        $result = [];
+
+        foreach ($fields as $field) {
+            $result[] = $field->getName();
         }
 
-        if ($this->fields) {
-            return $this->fields[$fieldName]->getSubFields();
-        }
-
-        return $this->defaultFields[$fieldName]->getSubFields();
+        return $result;
     }
 
     /**
+     * @param string $namespace
      * @param string[] $withoutFieldNames
      * @return FieldObject[]
+     * @throws AlchemistRestfulApiException
      */
-    private function withoutFields(array $withoutFieldNames): array
+    public function withoutFields(string $namespace = '$', array $withoutFieldNames = []): array
     {
-        $excludedFields = [];
+        $fields = $this->fields ?: $this->defaultFields;
 
-        $withoutFieldNameMap = array_flip($withoutFieldNames);
+        $namespaceFields = $this->namespaceFields($fields, $namespace);
 
-        foreach ($this->fields ?: $this->defaultFields as $fieldName => $fieldObj) {
-            if (! array_key_exists($fieldName, $withoutFieldNameMap)) {
-                $excludedFields[$fieldName] = $fieldObj;
+        if (! $namespaceFields) {
+            throw new AlchemistRestfulApiException(
+                sprintf("cannot find fields with `%s` namespace", $namespace)
+            );
+        }
+
+
+        if (empty($withoutFieldNames)) {
+            return $namespaceFields;
+        }
+
+        $result = [];
+
+        $excludeFieldNamesMap = array_flip($withoutFieldNames);
+
+        foreach ($namespaceFields as $fieldName => $fieldObj) {
+            if (! array_key_exists($fieldName, $excludeFieldNamesMap)) {
+                $result[$fieldName] = $fieldObj;
             }
         }
 
-        return $excludedFields;
+        return $result;
+    }
+
+    /**
+     * @param string $namespace
+     * @param string[] $withoutFieldNames
+     * @return string[]
+     * @throws AlchemistRestfulApiException
+     */
+    public function flatWithoutFields(string $namespace = '$', array $withoutFieldNames = []): array
+    {
+        $fields = $this->withoutFields($namespace, $withoutFieldNames);
+
+        $result = [];
+
+        foreach ($fields as $field) {
+            $result[] = $field->getName();
+        }
+
+        return $result;
     }
 
     /**
@@ -156,154 +194,105 @@ class FieldSelector
      */
     public function validate(&$notification = null): FieldSelectorErrorBag
     {
-        /** @var string[] $unselectableFields */
-        $unselectableFields = [];
-
-        /** @var string[][] $unselectableSubFields */
-        $unselectableSubFields = [];
-
-        /** @var string[] $subsidiarySelectErrors */
-        $subsidiarySelectErrors = [];
-
-        if (empty($this->selectableFields)) {
-            return $notification = new FieldSelectorErrorBag(true);
-        }
-
-        $selectableFieldMap = array_flip($this->selectableFields);
-
         $fields = $this->fields ?: $this->defaultFields;
 
-        foreach ($fields as $fieldName => $fieldObj) {
-            if (! array_key_exists($fieldName, $selectableFieldMap)) {
-                $unselectableFields[] = $fieldName;
-
-                continue;
-            }
-
-            $isSubFieldDefined = ! empty($this->selectableSubFields[$fieldName]);
-
-            if ($isSubFieldDefined) {
-                if (empty($fieldObj->getSubFields())) {
-                    continue;
-                }
-
-                $selectableSubFieldMap = array_flip($this->selectableSubFields[$fieldName]);
-
-                foreach ($fieldObj->getSubFields() as $subField) {
-                    if (! array_key_exists($subField, $selectableSubFieldMap)) {
-                        if (! array_key_exists($fieldName, $unselectableSubFields)) {
-                            $unselectableSubFields[$fieldName] = [];
-                        }
-
-                        $unselectableSubFields[$fieldName][] = $subField;
-                    }
-                }
-            } elseif (! empty($fieldObj->getSubFields())) {
-                $subsidiarySelectErrors[] = $fieldObj->getName();
-            }
-        }
-
-        if ($subsidiarySelectErrors) {
-            return $notification = new FieldSelectorErrorBag(
-                false, $unselectableFields, $unselectableSubFields, $subsidiarySelectErrors
-            );
-        }
-
-        if ($unselectableSubFields) {
-            return $notification = new FieldSelectorErrorBag(false, $unselectableFields, $unselectableSubFields);
-        }
-
-        if ($unselectableFields) {
-            return $notification = new FieldSelectorErrorBag(false, $unselectableFields);
+        if (! $this->deepCompareSelectableFields('$', $fields, $this->selectableFields, $errors)) {
+            return $notification = new FieldSelectorErrorBag(false, $errors['namespace'], $errors['fields']);
         }
 
         return $notification = new FieldSelectorErrorBag(true);
     }
 
     /**
-     * @param string $field
-     * @return FieldObject
+     * @param string $namespace
+     * @param array $fields
+     * @param $selectableFields
+     * @param $errors
+     * @return bool
      */
-    private function parseOption(string $field): FieldObject
+    private function deepCompareSelectableFields(string $namespace, array $fields, $selectableFields, &$errors): bool
     {
-        preg_match('/([\w\s]+)\.limit\((\d+)\){([\w,\s]+)?}/', $field, $matches);
+        $isFieldValid = true;
 
-        if (! empty($matches)) {
-            $field = trim($matches[1]);
-            $limit = (int) $matches[2];
+        /** @var FieldObject $fieldObject */
+        foreach ($fields as $fieldObject) {
+            $diffWithSelectableFields = array_diff_key($fields, $selectableFields);
 
-            $subfields = [];
+            if (! empty($diffWithSelectableFields)) {
+                $isFieldValid = false;
 
-            if (isset($matches[3])) {
-                foreach (explode(',', $matches[3]) as &$subfield) {
-                    $subfield = trim($subfield);
-                    if (! empty($subfield)) {
+                $errors = ['namespace' => $namespace, 'fields' => array_keys(array_map(fn(FieldObject $item) => 1, $diffWithSelectableFields))];
 
-                        $subfields[] = $subfield;
-                    }
-                }
+                break;
             }
 
-            return new FieldObject($field, $limit, $subfields);
-        }
-
-        preg_match('/([\w\s]+){([\w,\s]+)?}/', $field, $matches);
-
-        if (! empty($matches)) {
-
-            $field = trim($matches[1]);
-
-            $subfields = [];
-
-            if (isset($matches[2])) {
-                foreach (explode(',', $matches[2]) as &$subfield) {
-                    $subfield = trim($subfield);
-                    if (! empty($subfield)) {
-
-                        $subfields[] = $subfield;
-                    }
-                }
+            if ($fieldObject->getSubFields()) {
+                return $this->deepCompareSelectableFields(
+                    "$namespace.{$fieldObject->getName()}",
+                    $fieldObject->getSubFields(),
+                    $selectableFields[$fieldObject->getName()],
+                    $errors
+                );
             }
-
-            return new FieldObject($field, 0, $subfields);
         }
 
-        return new FieldObject($field);
+        return $isFieldValid;
     }
 
     /**
      * @param string $fields
-     * @return FieldObject[]
-     * @throws FieldSelectorSyntaxErrorException
+     * @return array
      */
     private function parseFields(string $fields): array
     {
         $result = [];
 
-        preg_match_all(
-            '/(([\w\s]+)|(([\w\s]+)\.limit\(([\d\s]+)\){([\w,\s]+)?})|(([\w\s]+){([\w,\s]+)?}))(?:,|$)/',
-            $fields,
-            $matches
-        );
+        $regex = '/([\w\s]+)(?:\.limit\((\d+)\))?(?:\{(.+?)\})?(?:,|$)/';
 
-        if (! (implode('', $matches[0]) === $fields)) {
-            throw new FieldSelectorSyntaxErrorException();
-        }
+        preg_match_all($regex, $fields, $matches, PREG_SET_ORDER);
 
-        foreach ($matches[1] as $field) {
-            $field = trim($field);
+        foreach ($matches as $match) {
+            $field          = trim($match[1]);
+            $limit          = isset($match[2]) ? intval($match[2]) : null;
+            $nestedFields   = $match[3] ?? null;
 
-            if (! empty($field)) {
-                if (Strings::contains($field, '.')) {
-                    $fieldName = Strings::start($field, '.');
-                } else {
-                    $fieldName = Strings::start($field, '{');
-                }
-
-                $result[$fieldName] = $this->parseOption($field);
+            if (! isset($result[$field])) {
+                $result[$field] = new FieldObject($field, $limit ?? 0, $nestedFields ? $this->parseFields($nestedFields) : []);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * @param array $fields
+     * @param string $namespace
+     * @return array|null
+     */
+    private function namespaceFields(array $fields, string $namespace): ?array
+    {
+        if (empty($namespace)) {
+            return $fields;
+        }
+
+        $namespaceArr = explode('.', $namespace);
+
+        if (! empty($namespaceArr)) {
+
+            $current = reset($namespaceArr);
+
+            if ($current === '$') {
+                unset($namespaceArr[0]);
+                return $this->namespaceFields($fields, implode('.', $namespaceArr));
+            }
+
+            if (isset($fields[$current])) {
+                unset($namespaceArr[0]);
+                /** @var FieldObject[] $fields */
+                return $this->namespaceFields($fields[$current]->getSubFields(), implode('.', $namespaceArr));
+            }
+        }
+
+        return null;
     }
 }

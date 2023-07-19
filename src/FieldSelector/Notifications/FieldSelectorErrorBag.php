@@ -19,47 +19,36 @@ class FieldSelectorErrorBag
     private array $unselectableFields;
 
     /**
-     * Error selecting subfields not defined in the selectable subfields.
+     * The namespace where error has occurred
      *
-     * @var string[][]
+     * @var string
      */
-    private array $unselectableSubFields;
-
-    /**
-     * Error selecting subsidiary fields on field that do not define any subsidiary field.
-     *
-     * @var string[]
-     */
-    private array $subsidiarySelectErrors;
+    private string $namespace;
 
     /**
      * @param bool $passes
+     * @param string $namespace
      * @param string[] $unselectableFields
-     * @param string[][] $unselectableSubFields
-     * @param string[] $subsidiarySelectErrors
      */
     public function __construct(
         bool $passes,
-        array $unselectableFields = [],
-        array $unselectableSubFields = [],
-        array $subsidiarySelectErrors = []
+        string $namespace = '',
+        array $unselectableFields = []
     ) {
         $this->passes = $passes;
+        $this->namespace = $namespace;
         $this->unselectableFields = $unselectableFields;
-        $this->unselectableSubFields = $unselectableSubFields;
-        $this->subsidiarySelectErrors = $subsidiarySelectErrors;
     }
 
     /**
-     * @return array<string,array<array<string>|string>|bool>
+     * @return array<bool,string,array<string>>
      */
     public function toArray(): array
     {
         return [
             'passes' => $this->passes,
+            'namespace' => $this->namespace,
             'unselectable_fields' => $this->unselectableFields,
-            'unselectable_sub_fields' => $this->unselectableSubFields,
-            'subsidiary_select_errors' => $this->subsidiarySelectErrors,
         ];
     }
 
@@ -72,6 +61,14 @@ class FieldSelectorErrorBag
     }
 
     /**
+     * @return string
+     */
+    public function getNamespace(): string
+    {
+        return $this->namespace;
+    }
+
+    /**
      * @return string[]
      */
     public function getUnselectableFields(): array
@@ -80,43 +77,10 @@ class FieldSelectorErrorBag
     }
 
     /**
-     * @return string[][]
-     */
-    public function getUnselectableSubFields(): array
-    {
-        return $this->unselectableSubFields;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getSubsidiarySelectErrors(): array
-    {
-        return $this->subsidiarySelectErrors;
-    }
-
-    /**
      * @return bool
      */
     public function hasUnselectableFields(): bool
     {
         return ! empty($this->unselectableFields);
-    }
-
-    /**
-     * @param string $fieldName
-     * @return bool
-     */
-    public function hasUnselectableSubFields(string $fieldName): bool
-    {
-        return ! empty($this->unselectableSubFields[$fieldName]);
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasSubsidiarySelectErrors(): bool
-    {
-        return ! empty($this->subsidiarySelectErrors);
     }
 }
