@@ -53,7 +53,7 @@ use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 $restfulApi = new AlchemistRestfulApi([
     // The fields are passed in from the request input, fields are separated by commas, and subsidiary fields
     // are enclosed in `{}`.
-    'fields' => 'id,order_date,order_status,order_items{product_id,product_name,quality}'
+    'fields' => 'id,order_date,order_status,order_items{item_id,product_id,price,quantity}'
 ]);
 
 // Call `$restfulApi->fieldSelector()` to start the field selector builder, then your API definitions can be
@@ -67,7 +67,7 @@ $fieldSelector = $restfulApi->fieldSelector()
             'id',
             'order_date',
             'order_status',
-            'order_items'   => [
+            'order_items' => [
                 'item_id',
                 'product_id',
                 'price',
@@ -93,7 +93,7 @@ if (! $restfulApi->validate($errorBag)->passes()) {
 
 // Combine with the use of an ORM/Query Builder
 
-$result = ExampleOrderQueryBuilder::select($fieldSelector->flatFields($withOutFields = ['order_items']))->get();
+$result = ExampleOrderQueryBuilder::select($fieldSelector->flatFields())->get();
 
 // For other purposes, use `$fieldSelector->fields()` to obtain a complete map list of field object.
 
@@ -449,7 +449,7 @@ if (! $restfulApi->validate($errorBag)->passes()) {
 
 // Warning: The following code is just pseudo-code aimed at making it easy to visualize how to use this library.
 // You need to implement it yourself to achieve the desired functionality.
-$result = ExampleOrderQueryBuilder::select($fieldSelector->flatFields($withOutFields = ['order_items']))
+$result = ExampleOrderQueryBuilder::select($fieldSelector->flatFields())
             ->where(array_map(static fn($filteringObj) => $filteringObj->flatArray(), $resourceFilter->filtering()))
             ->limit($offsetPaginate->getLimit())->offset($offsetPaginate->getOffset())
             ->orderBy($sort->getSortField(), $sort->getDirection());
