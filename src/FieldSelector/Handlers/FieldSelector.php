@@ -42,6 +42,11 @@ class FieldSelector
         return $this;
     }
 
+    public function getFieldStructure(string $namespace = '$')
+    {
+        return $this->namespaceFieldStructure(['type' => 'root','sub' => $this->selectableFields], $namespace);
+    }
+
     /**
      * @param array $selectableFields
      * @return array
@@ -112,7 +117,11 @@ class FieldSelector
             if (is_string($value)) {
                 $res[$field] = $this->sampleGenerator($value);
             } else {
-                $res[$field] = $this->deepSampleStructure($value['sub']);
+                if ($value['type'] === 'collection') {
+                    $res[$field] = [$this->deepSampleStructure($value['sub'])];
+                } else {
+                    $res[$field] = $this->deepSampleStructure($value['sub']);
+                }
             }
         }
 
@@ -359,6 +368,39 @@ class FieldSelector
                 unset($namespaceArr[0]);
                 /** @var FieldObject[] $fields */
                 return $this->namespaceFields($fields[$current]->getSubFields(), implode('.', $namespaceArr));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array $fields
+     * @param string $namespace
+     * @return array|null
+     */
+    private function namespaceFieldStructure(array $fieldStruct, string $namespace): ?array
+    {
+        if (empty($namespace)) {
+            return [
+                'type' => $fieldStruct['type'],
+                'sub' => array_map(fn($e) => ! is_array($e) ? $e : $e['type'], $fieldStruct['sub'])
+            ];
+        }
+
+        $namespaceArr = explode('.', $namespace);
+        if (! empty($namespaceArr)) {
+
+            $current = reset($namespaceArr);
+
+            if ($current === '$') {
+                unset($namespaceArr[0]);
+                return $this->namespaceFieldStructure($fieldStruct, implode('.', $namespaceArr));
+            }
+
+            if (isset($fieldStruct['sub'][$current])) {
+                unset($namespaceArr[0]);
+                return $this->namespaceFieldStructure($fieldStruct['sub'][$current], implode('.', $namespaceArr));
             }
         }
 

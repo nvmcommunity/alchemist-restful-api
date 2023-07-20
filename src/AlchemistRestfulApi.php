@@ -11,6 +11,7 @@ use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\FieldSelectable;
 use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\ResourceOffsetPaginate;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\ResourceSearchable;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\ResourceSortable;
+use Nvmcommunity\Alchemist\RestfulApi\Response\Compose\ResourceResponsible;
 use stdClass;
 
 class AlchemistRestfulApi
@@ -19,7 +20,8 @@ class AlchemistRestfulApi
         ResourceFilterable,
         ResourceOffsetPaginate,
         ResourceSortable,
-        ResourceSearchable;
+        ResourceSearchable,
+        ResourceResponsible;
 
     /**
      * @param array $requestInput
@@ -74,6 +76,8 @@ class AlchemistRestfulApi
 
             $this->initResourceSearch($requestInput['search'] ?? '');
         }
+
+        $this->initResponseCompose($this);
     }
 
     /**
