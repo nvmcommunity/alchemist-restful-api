@@ -47,6 +47,34 @@ class ResourceOffsetPaginationErrorBag
     }
 
     /**
+     * @return array
+     */
+    public function getMessages(): array
+    {
+        if ($this->passes()) {
+            return [];
+        }
+
+        $messages = [];
+
+        if ($this->isMaxLimitReached()) {
+            $messages[] = [
+                'error_code' => 'MAX_LIMIT_REACHED',
+                'error_message' => "The limit passed in exceeds the maximum limit.",
+            ];
+        }
+
+        if ($this->isNegativeOffset()) {
+            $messages[] = [
+                'error_code' => 'NEGATIVE_OFFSET',
+                'error_message' => "Offset passed in a negative value.",
+            ];
+        }
+
+        return $messages;
+    }
+
+    /**
      * @return bool
      */
     public function passes(): bool

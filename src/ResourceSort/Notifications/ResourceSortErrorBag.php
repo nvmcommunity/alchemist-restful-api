@@ -43,6 +43,34 @@ class ResourceSortErrorBag
     }
 
     /**
+     * @return array
+     */
+    public function getMessages(): array
+    {
+        if ($this->passes()) {
+            return [];
+        }
+
+        $messages = [];
+
+        if ($this->isInvalidDirection()) {
+            $messages[] = [
+                'error_code' => 'INVALID_DIRECTION',
+                'error_message' => "The direction passed in a invalid value.",
+            ];
+        }
+
+        if ($this->isInvalidSortField()) {
+            $messages[] = [
+                'error_code' => 'INVALID_SORT_FIELD',
+                'error_message' => "The sort passed in a invalid value.",
+            ];
+        }
+
+        return $messages;
+    }
+
+    /**
      * @return bool
      */
     public function passes(): bool

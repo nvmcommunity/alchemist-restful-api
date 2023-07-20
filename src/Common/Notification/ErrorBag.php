@@ -2,20 +2,25 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\Common\Notification;
 
-use stdClass;
+use Closure;
 
 class ErrorBag
 {
+    /**
+     * @var Closure|null
+     */
+    private ?Closure $errorHandler = null;
+
     /**
      * @var bool
      */
     private bool $passes;
     /**
-     * @var stdClass
+     * @var CompoundErrors
      */
-    private stdClass $errors;
+    private CompoundErrors $errors;
 
-    public function __construct(bool $passes, stdClass $errors)
+    public function __construct(bool $passes, CompoundErrors $errors)
     {
         $this->passes = $passes;
         $this->errors = $errors;
@@ -30,10 +35,19 @@ class ErrorBag
     }
 
     /**
-     * @return stdClass
+     * @param Closure|null $closure
+     * @return void
      */
-    public function getErrors(): stdClass
+    public function setErrorHandler(?Closure $closure): void
     {
-        return $this->errors;
+        $this->errorHandler = $closure;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getErrors()
+    {
+        return $this->errorHandler ? call_user_func($this->errorHandler, $this->errors) : $this->errors;
     }
 }

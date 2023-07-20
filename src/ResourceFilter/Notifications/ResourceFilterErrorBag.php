@@ -66,6 +66,62 @@ class ResourceFilterErrorBag
     }
 
     /**
+     * @return array
+     */
+    public function getMessages(): array
+    {
+        if ($this->passes()) {
+            return [];
+        }
+
+        $messages = [];
+
+        if ($this->hasInvalidFiltering()) {
+            $messages[] = [
+                'error_code' => 'INVALID_FILTERING',
+                'error_message' => "The filtering passed in is invalid.",
+                'error_filtering' => $this->getInvalidFiltering(),
+            ];
+        }
+
+        if ($this->hasInvalidFilteringValue()) {
+
+            $invalidFilteringValue = array_map(function($e) {
+                $data = [];
+
+                $data[] = $e->getFiltering();
+
+                if (! empty($e->getSupportedFormats())) {
+                    $data[] = implode('|', $e->getSupportedFormats());
+                } elseif (! empty($e->getSupportedValue())) {
+                    $data[] = implode('|', $e->getSupportedValue());
+                } elseif (! empty($e->getSupportedType())) {
+                    $data[] = implode('|', $e->getSupportedType());
+                }
+
+                return implode('^', $data);
+
+            } , $this->getInvalidFilteringValue());
+
+            $messages[] = [
+                'error_code' => 'INVALID_FILTERING_VALUE',
+                'error_message' => "The filtering passed in contains invalid value.",
+                'error_filtering' => $invalidFilteringValue,
+            ];
+        }
+
+        if ($this->hasMissingRequiredFiltering()) {
+            $messages[] = [
+                'error_code' => 'MISSING_REQUIRED_FILTERING',
+                'error_message' => "Missing required filtering",
+                'error_filtering' => $this->getMissingRequiredFiltering(),
+            ];
+        }
+
+        return $messages;
+    }
+
+    /**
      * @return bool
      */
     public function passes(): bool

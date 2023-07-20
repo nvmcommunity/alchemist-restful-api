@@ -3,7 +3,9 @@
 namespace Nvmcommunity\Alchemist\RestfulApi;
 
 use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Numerics;
+use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\Adapters\AlchemistAdapter;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\AlchemistQueryable;
+use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\CompoundErrors;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\ResourceFilterable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
@@ -12,7 +14,6 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Resour
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\ResourceSearchable;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\ResourceSortable;
 use Nvmcommunity\Alchemist\RestfulApi\Response\Compose\ResourceResponsible;
-use stdClass;
 
 class AlchemistRestfulApi
 {
@@ -22,6 +23,8 @@ class AlchemistRestfulApi
         ResourceSortable,
         ResourceSearchable,
         ResourceResponsible;
+
+    protected AlchemistAdapter $adapter;
 
     /**
      * @param array $requestInput
@@ -78,52 +81,59 @@ class AlchemistRestfulApi
         }
 
         $this->initResponseCompose($this);
+
+        $this->setAdapter(new AlchemistAdapter);
     }
 
     /**
-     * @param $errorBag
+     * @param ErrorBag|null $errorBag
      * @return ErrorBag
      */
-    public function validate(&$errorBag = null): ErrorBag
+    public function validate(?ErrorBag &$errorBag = null): ErrorBag
     {
-        $errors = new stdClass();
+        $errors = new CompoundErrors;
 
         $passes = true;
 
         if ($this->isModuleEnable(FieldSelectable::class)) {
             if (! $this->fieldSelector()->validate($fieldSelectorErrorBag)->passes()) {
                 $passes = false;
-            }
 
-            $errors->fieldSelector = $fieldSelectorErrorBag;
+                $errors->fieldSelector = $fieldSelectorErrorBag;
+            }
         }
 
         if ($this->isModuleEnable(ResourceFilterable::class)) {
             if (! $this->resourceFilter()->validate($resourceFilterErrorBag)->passes()) {
                 $passes = false;
+
+                $errors->resourceFilter = $resourceFilterErrorBag;
             }
-
-            $errors->resourceFilter = $resourceFilterErrorBag;
-
         }
 
         if ($this->isModuleEnable(ResourceOffsetPaginate::class)) {
             if (! $this->resourceOffsetPaginator()->validate($resourceOffsetPaginatorErrorBag)->passes()) {
                 $passes = false;
-            }
 
-            $errors->resourceOffsetPaginator = $resourceOffsetPaginatorErrorBag;
+                $errors->resourceOffsetPaginator = $resourceOffsetPaginatorErrorBag;
+            }
         }
 
         if ($this->isModuleEnable(ResourceSortable::class)) {
             if (! $this->resourceSort()->validate($resourceSortErrorBag)->passes()) {
                 $passes = false;
-            }
 
-            $errors->resourceSort = $resourceSortErrorBag;
+                $errors->resourceSort = $resourceSortErrorBag;
+            }
         }
 
-        return $errorBag = new ErrorBag($passes, $errors);
+        $errorBag = new ErrorBag($passes, $errors);
+
+        if (method_exists($this->adapter, 'errorHandler')) {
+            $this->adapter->errorHandler($errorBag);
+        }
+
+        return $errorBag;
     }
 
     /**
@@ -168,5 +178,15 @@ class AlchemistRestfulApi
     private function isModuleEnable(string $module): bool
     {
         return array_key_exists($module, class_uses($this));
+    }
+
+    /**
+     * @param AlchemistAdapter $adapter
+     */
+    public function setAdapter(AlchemistAdapter $adapter): void
+    {
+        $this->adapter = $adapter;
+
+        $this->adapter->for($this);
     }
 }

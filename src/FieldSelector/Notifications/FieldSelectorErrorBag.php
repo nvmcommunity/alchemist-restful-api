@@ -53,6 +53,29 @@ class FieldSelectorErrorBag
     }
 
     /**
+     * @return array
+     */
+    public function getMessages(): array
+    {
+        if ($this->passes()) {
+            return [];
+        }
+
+        $messages = [];
+
+        if ($this->hasUnselectableFields()) {
+            $messages[] = [
+                'error_code' => 'UNSELECTABLE_FIELD',
+                'error_message' => "Error selecting fields not defined in the selectable fields.",
+                'error_namespace' => $this->getNamespace(),
+                'error_fields' => $this->getUnselectableFields()
+            ];
+        }
+
+        return $messages;
+    }
+
+    /**
      * @return bool
      */
     public function passes(): bool
