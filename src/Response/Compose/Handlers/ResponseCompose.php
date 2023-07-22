@@ -97,7 +97,7 @@ class ResponseCompose
      * @return void
      * @throws AlchemistRestfulApiException
      */
-    public function deepValidateFieldStructure(?string $type, string $namespace, array $data): void
+    private function deepValidateFieldStructure(?string $type, string $namespace, array $data): void
     {
         $structure = $this->alchemist->fieldSelector()->getFieldStructure($namespace);
 
