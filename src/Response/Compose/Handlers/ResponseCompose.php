@@ -86,13 +86,17 @@ class ResponseCompose
 
         if (in_array($structure['type'], ['collection', 'object', 'root']) === false) {
             throw new AlchemistRestfulApiException(
-                sprintf("The `%s` namespace is not a collection", implode('.', $previous))
+                sprintf("The `%s` namespace is not a collection or object", implode('.', $previous))
             );
         }
 
         $fieldName = $lastKey;
 
         foreach ($data as $value) {
+            if ($structure['sub'][$fieldName] === 'atomic') {
+                continue;
+            }
+
             if (is_array($value)) {
                 $this->deepValidateFieldStructure(null, implode('.', $namespaceArr) .".$fieldName", $value);
             }
