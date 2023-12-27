@@ -15,6 +15,13 @@ class ResponseCompose
     private array $responseData = [];
 
     /**
+     * value: object|collection
+     *
+     * @var string
+     */
+    private string $responseDataType;
+
+    /**
      * @param AlchemistRestfulApi $alchemist
      */
     public function __construct(AlchemistRestfulApi $alchemist)
@@ -38,6 +45,8 @@ class ResponseCompose
         $this->deepValidateFieldStructure('collection', '$', $data);
 
         $this->responseData = $data;
+
+        $this->responseDataType = 'collection';
     }
 
     /**
@@ -48,6 +57,8 @@ class ResponseCompose
         $this->deepValidateFieldStructure('object', '$', $data);
 
         $this->responseData = $data;
+
+        $this->responseDataType = 'object';
     }
 
     /**
@@ -73,7 +84,7 @@ class ResponseCompose
             $control = &$control[$item];
         }
 
-        if ($structure['type'] !== 'collection') {
+        if (in_array($structure['type'], ['collection', 'object', 'root']) === false) {
             throw new AlchemistRestfulApiException(
                 sprintf("The `%s` namespace is not a collection", implode('.', $previous))
             );
@@ -82,11 +93,25 @@ class ResponseCompose
         $fieldName = $lastKey;
 
         foreach ($data as $value) {
-            $this->deepValidateFieldStructure(null, implode('.', $namespaceArr) .".$fieldName", $value);
+            if (is_array($value)) {
+                $this->deepValidateFieldStructure(null, implode('.', $namespaceArr) .".$fieldName", $value);
+            }
         }
 
-        foreach ($control as &$j) {
-            $j[$fieldName] = $data[$j[$compareField]];
+        $o = $structure['type'];
+
+        if ($structure['type'] === 'root') {
+            $o = $this->responseDataType;
+        }
+
+        if ($o === 'collection') {
+            foreach ($control as &$j) {
+                $j[$fieldName] = $data[$j[$compareField]];
+            }
+        }
+
+        if ($o === 'object') {
+            $control[$fieldName] = $data[$control[$compareField]];
         }
     }
 
