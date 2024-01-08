@@ -5,6 +5,9 @@ namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications\FieldSelectorErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\FieldObject;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\Structure\Abstracts\FieldStructure;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\Structure\CollectionStructure;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\Structure\ObjectStructure;
 
 class FieldSelector
 {
@@ -42,9 +45,13 @@ class FieldSelector
         return $this;
     }
 
-    public function getFieldStructure(string $namespace = '$')
+    /**
+     * @param string $namespace
+     * @return array|null
+     */
+    public function getFieldStructure(string $namespace = '$'): ?array
     {
-        return $this->namespaceFieldStructure(['type' => 'root','sub' => $this->selectableFields], $namespace);
+        return $this->namespaceFieldStructure(['type' => 'root', 'sub' => $this->selectableFields], $namespace);
     }
 
     /**
@@ -54,26 +61,50 @@ class FieldSelector
     private function parseSelectable(array $selectableFields): array
     {
         $res = [];
+        $substitute = [];
 
         foreach ($selectableFields as $selectableFieldKey => $selectableFieldValue) {
-            $isAtomicField = is_numeric($selectableFieldKey);
+            if ($selectableFieldValue instanceof ObjectStructure) {
+                $fieldName = $selectableFieldValue->getName();
+                $fieldType = 'object';
 
-            $fieldWithType = $this->parseFieldWithType(
-                $isAtomicField ? $selectableFieldValue : $selectableFieldKey,
-                is_array($selectableFieldValue)
-            );
+                if ($selectableFieldValue->getSubstitute()) {
+                    $substitute = $selectableFieldValue->getSubstitute();
+                }
+            } elseif ($selectableFieldValue instanceof CollectionStructure) {
+                $fieldName = $selectableFieldValue->getName();
+                $fieldType = 'collection';
 
-            $fieldName = $fieldWithType['field'];
-            $fieldType = $fieldWithType['type'];
+                if ($selectableFieldValue->getSubstitute()) {
+                    $substitute = $selectableFieldValue->getSubstitute();
+                }
+            } else {
+                $fieldName = $selectableFieldValue;
+                $fieldType = 'atomic';
+            }
 
-            if ($isAtomicField) {
+            # start legacy
+            if (is_string($selectableFieldKey)) {
+                $fieldWithType = $this->parseFieldWithType($selectableFieldKey, is_array($selectableFieldValue));
+
+                $fieldName = $fieldWithType['field'];
+                $fieldType = $fieldWithType['type'];
+            }
+            # end legacy
+
+            if ($fieldType === 'atomic') {
                 $res[$fieldName] = $fieldType;
             } else {
                 $subFields = $selectableFieldValue;
 
+                if (! is_array($subFields)) {
+                    $subFields = $subFields->getFields();
+                }
+
                 $res[$fieldName] = [
                     'type' => $fieldType,
-                    'sub' => $this->parseSelectable($subFields)
+                    'sub' => $this->parseSelectable($subFields),
+                    'substitute' => $substitute,
                 ];
             }
         }
@@ -195,18 +226,28 @@ class FieldSelector
 
     /**
      * @param string $namespace
+     * @param bool $substitute
      * @param string[] $withFieldNames
      * @return string[]
      * @throws AlchemistRestfulApiException
      */
-    public function flatFields(string $namespace = '$', array $withFieldNames = []): array
+    public function flatFields(string $namespace = '$', bool $substitute = true, array $withFieldNames = []): array
     {
         $fields = $this->fields($namespace, $withFieldNames);
 
-        $result = [];
+        $substitutes = $this->namespaceSubstitutes($this->selectableFields, $namespace);
 
+        $result = [];
         foreach ($fields as $field) {
-            $result[] = $field->getName();
+            if ($substitute) {
+                if (($substitutes[$field->getName()] ?? '') === '&') {
+                    continue;
+                }
+
+                $result[] = ($substitutes[$field->getName()] ?? $field->getName());
+            } else {
+                $result[] = $field->getName();
+            }
         }
 
         return $result;
@@ -304,6 +345,7 @@ class FieldSelector
 
                 break;
             }
+
             if ($fieldObject->getSubFields()) {
                 return $this->deepCompareSelectableFields(
                     "$namespace.{$fieldObject->getName()}",
@@ -375,7 +417,46 @@ class FieldSelector
     }
 
     /**
-     * @param array $fields
+     * @param array $selectableFields
+     * @param string $namespace
+     * @return array|null
+     */
+    private function namespaceSubstitutes(array $selectableFields, string $namespace): ?array
+    {
+        if (empty($namespace)) {
+            $subs = [];
+
+            foreach ($selectableFields as $field => $structure) {
+                if (isset($structure['substitute'])) {
+                    $subs[$field] = $structure['substitute'];
+                }
+            }
+
+            return $subs;
+        }
+
+        $namespaceArr = explode('.', $namespace);
+
+        if (! empty($namespaceArr)) {
+
+            $current = reset($namespaceArr);
+
+            if ($current === '$') {
+                unset($namespaceArr[0]);
+                return $this->namespaceSubstitutes($selectableFields, implode('.', $namespaceArr));
+            }
+
+            if (isset($selectableFields[$current])) {
+                unset($namespaceArr[0]);
+                return $this->namespaceSubstitutes($selectableFields[$current]['sub'], implode('.', $namespaceArr));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array $fieldStruct
      * @param string $namespace
      * @return array|null
      */

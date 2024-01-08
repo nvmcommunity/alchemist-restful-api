@@ -32,6 +32,7 @@
     "prefer-stable": true,
     "require-dev": {
         "phpstan/phpstan": "^1.10",
-        "symfony/var-dumper": "^6.2"
+        "symfony/var-dumper": "^6.2",
+        "phpunit/phpunit": "9.6.15"
     }
 }

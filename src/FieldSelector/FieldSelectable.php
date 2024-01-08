@@ -14,7 +14,6 @@ trait FieldSelectable
     /**
      * @param string $fields
      * @return void
-     * @throws FieldSelectorSyntaxErrorException
      */
     private function initFieldSelector(string $fields): void
     {
