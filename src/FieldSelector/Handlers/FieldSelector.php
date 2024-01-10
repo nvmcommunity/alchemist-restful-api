@@ -62,10 +62,12 @@ class FieldSelector
     {
         $res = [];
         $substitute = [];
+        $defaultFields = [];
 
         foreach ($selectableFields as $selectableFieldKey => $selectableFieldValue) {
             if ($selectableFieldValue instanceof ObjectStructure) {
                 $fieldName = $selectableFieldValue->getName();
+                $defaultFields = $selectableFieldValue->getDefaultFields();
                 $fieldType = 'object';
 
                 if ($selectableFieldValue->getSubstitute()) {
@@ -73,6 +75,7 @@ class FieldSelector
                 }
             } elseif ($selectableFieldValue instanceof CollectionStructure) {
                 $fieldName = $selectableFieldValue->getName();
+                $defaultFields = $selectableFieldValue->getDefaultFields();
                 $fieldType = 'collection';
 
                 if ($selectableFieldValue->getSubstitute()) {
@@ -105,6 +108,7 @@ class FieldSelector
                     'type' => $fieldType,
                     'sub' => $this->parseSelectable($subFields),
                     'substitute' => $substitute,
+                    'defaultFields' => $defaultFields,
                 ];
             }
         }
@@ -199,6 +203,10 @@ class FieldSelector
         $fields = $this->fields ?: $this->defaultFields;
 
         $namespaceFields = $this->namespaceFields($fields, $namespace);
+
+        if (empty($namespaceFields)) {
+            $namespaceFields = $this->namespaceDefaultFields($this->selectableFields, $namespace);
+        }
 
         if (! $namespaceFields) {
             throw new AlchemistRestfulApiException(
@@ -449,6 +457,37 @@ class FieldSelector
             if (isset($selectableFields[$current])) {
                 unset($namespaceArr[0]);
                 return $this->namespaceSubstitutes($selectableFields[$current]['sub'], implode('.', $namespaceArr));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array $fieldStructures
+     * @param string $namespace
+     * @return array|null
+     */
+    private function namespaceDefaultFields(array $fieldStructures, string $namespace): ?array
+    {
+        if (empty($namespace)) {
+            return $this->parseFields(implode(',', $fieldStructures['defaultFields']));
+        }
+
+        $namespaceArr = explode('.', $namespace);
+
+        if (! empty($namespaceArr)) {
+
+            $current = reset($namespaceArr);
+
+            if ($current === '$') {
+                unset($namespaceArr[0]);
+                return $this->namespaceDefaultFields($fieldStructures, implode('.', $namespaceArr));
+            }
+
+            if (isset($fieldStructures[$current])) {
+                unset($namespaceArr[0]);
+                return $this->namespaceDefaultFields($fieldStructures[$current], implode('.', $namespaceArr));
             }
         }
 
