@@ -179,14 +179,14 @@ class ResponseCompose
     /**
      * @param string $namespace
      * @param string $mapType
-     * @param array $incomingData
+     * @param array $incomingDataMap
      * @param $namespaceData
      * @param string $compareField
      * @param string $composeFieldName
      * @return array
      * @throws AlchemistRestfulApiException
      */
-    private function mapIncomingDataIntoNamespaceData(string $namespace, string $mapType, array $incomingData, $namespaceData, string $compareField, string $composeFieldName): array
+    private function mapIncomingDataIntoNamespaceData(string $namespace, string $mapType, array $incomingDataMap, $namespaceData, string $compareField, string $composeFieldName): array
     {
         if (! isset($namespaceData[$compareField])) {
             throw new AlchemistRestfulApiException(
@@ -195,7 +195,11 @@ class ResponseCompose
         }
 
         if ($mapType === 'VALUE') {
-            $namespaceData[$composeFieldName] = $incomingData[$namespaceData[$compareField]];
+            $namespaceData[$composeFieldName] = null;
+
+            if (isset($namespaceData[$compareField])) {
+                $namespaceData[$composeFieldName] = $incomingDataMap[$namespaceData[$compareField]] ?? null;
+            }
         } else if ($mapType === 'INNER_VALUE') {
             if (! is_array($namespaceData[$compareField])) {
                 throw new AlchemistRestfulApiException(
@@ -204,7 +208,7 @@ class ResponseCompose
             }
 
             foreach ($namespaceData[$compareField] as $key => $value) {
-                if (!isset($incomingData[$value])) {
+                if (!isset($incomingDataMap[$value])) {
                     continue;
                 }
 
@@ -212,7 +216,7 @@ class ResponseCompose
                     $namespaceData[$composeFieldName] = [];
                 }
 
-                $namespaceData[$composeFieldName][$key] = $incomingData[$value];
+                $namespaceData[$composeFieldName][$key] = $incomingDataMap[$value];
             }
         }
         return $namespaceData;
