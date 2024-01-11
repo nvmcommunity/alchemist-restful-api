@@ -61,7 +61,7 @@ class FieldSelector
     private function parseSelectable(array $selectableFields): array
     {
         $res = [];
-        $substitute = [];
+        $substitute = null;
         $defaultFields = [];
 
         foreach ($selectableFields as $selectableFieldKey => $selectableFieldValue) {
@@ -248,7 +248,7 @@ class FieldSelector
         $result = [];
         foreach ($fields as $field) {
             if ($substitute) {
-                if (($substitutes[$field->getName()] ?? '') === '&') {
+                if (($substitutes[$field->getName()] ?? null) === '&') {
                     continue;
                 }
 
