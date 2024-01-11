@@ -64,58 +64,60 @@ class ResponseCompose
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function compose(string $namespace, string $compareField, array $data): void
+    public function composeByDataMap(string $namespace, string $composeFieldName, string $mapType, string $compareField, array $incomingDataMap): void
     {
         $namespaceArr = explode('.', $namespace);
 
-        $lastKey = array_pop($namespaceArr);
-
-        $control = &$this->responseData;
+        $namespaceData = &$this->responseData;
 
         $previous = [];
         foreach ($namespaceArr as $item) {
             $previous[] = $item;
-            $structure = $this->alchemist->fieldSelector()->getFieldStructure(implode('.', $previous));
+            $fieldStructure = $this->alchemist->fieldSelector()->getFieldStructure(implode('.', $previous));
 
-            if ($structure['type'] === 'root') {
+            if ($fieldStructure['type'] === 'root') {
                 continue;
             }
 
-            $control = &$control[$item];
+            $namespaceData = &$namespaceData[$item];
         }
 
-        if (in_array($structure['type'], ['collection', 'object', 'root']) === false) {
+        if (in_array($fieldStructure['type'], ['collection', 'object', 'root']) === false) {
             throw new AlchemistRestfulApiException(
                 sprintf("The `%s` namespace is not a collection or object", implode('.', $previous))
             );
         }
 
-        $fieldName = $lastKey;
-
-        foreach ($data as $value) {
-            if ($structure['sub'][$fieldName] === 'atomic') {
+        foreach ($incomingDataMap as $incomingDatumMap) {
+            if ($fieldStructure['sub'][$composeFieldName] === 'atomic') {
                 continue;
             }
 
-            if (is_array($value)) {
-                $this->deepValidateFieldStructure(null, implode('.', $namespaceArr) .".$fieldName", $value);
+            if (is_array($incomingDatumMap)) {
+                $this->deepValidateFieldStructure(null, implode('.', $namespaceArr) .".$composeFieldName", $incomingDatumMap);
             }
         }
 
-        $o = $structure['type'];
+        $responseDataType = $fieldStructure['type'];
 
-        if ($structure['type'] === 'root') {
-            $o = $this->responseDataType;
+        if ($fieldStructure['type'] === 'root') {
+            $responseDataType = $this->responseDataType;
         }
 
-        if ($o === 'collection') {
-            foreach ($control as &$j) {
-                $j[$fieldName] = $data[$j[$compareField]];
+        if ($responseDataType === 'collection') {
+            $namespaceCollection = &$namespaceData;
+
+            foreach ($namespaceCollection as &$namespaceCollectionItem) {
+                $namespaceCollectionItem = $this->mapIncomingDataIntoNamespaceData($namespace, $mapType, $incomingDataMap, $namespaceCollectionItem, $compareField, $composeFieldName);
             }
+
+            unset($namespaceCollectionItem);
         }
 
-        if ($o === 'object') {
-            $control[$fieldName] = $data[$control[$compareField]];
+        if ($responseDataType === 'object') {
+            $namespaceObject = &$namespaceData;
+
+            $namespaceObject = $this->mapIncomingDataIntoNamespaceData($namespace, $mapType, $incomingDataMap, $namespaceObject, $compareField, $composeFieldName);
         }
     }
 
@@ -168,5 +170,46 @@ class ResponseCompose
                 }
             }
         }
+    }
+
+    /**
+     * @param string $mapType
+     * @param array $incomingData
+     * @param $namespaceData
+     * @param string $compareField
+     * @param $fieldName
+     * @return array
+     * @throws AlchemistRestfulApiException
+     */
+    public function mapIncomingDataIntoNamespaceData(string $namespace, string $mapType, array $incomingData, $namespaceData, string $compareField, $fieldName): array
+    {
+        if (! isset($namespaceData[$compareField])) {
+            throw new AlchemistRestfulApiException(
+                sprintf("The `%s` field doesn't exist at `%s` namespace", $compareField, $namespace)
+            );
+        }
+
+        if ($mapType === 'VALUE') {
+            $namespaceData[$fieldName] = $incomingData[$namespaceData[$compareField]];
+        } else if ($mapType === 'INNER_VALUE') {
+            if (! is_array($namespaceData[$compareField])) {
+                throw new AlchemistRestfulApiException(
+                    sprintf("By using `INNER_VALUE` map type, the `%s` field at `%s` namespace must be type of array", $compareField, $namespace)
+                );
+            }
+
+            foreach ($namespaceData[$compareField] as $key => $value) {
+                if (!isset($incomingData[$value])) {
+                    continue;
+                }
+
+                if (!isset($namespaceData[$fieldName])) {
+                    $namespaceData[$fieldName] = [];
+                }
+
+                $namespaceData[$fieldName][$key] = $incomingData[$value];
+            }
+        }
+        return $namespaceData;
     }
 }
