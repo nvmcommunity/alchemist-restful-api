@@ -108,7 +108,9 @@ class ResponseCompose
             $namespaceCollection = &$namespaceData;
 
             foreach ($namespaceCollection as &$namespaceCollectionItem) {
-                $namespaceCollectionItem = $this->mapIncomingDataIntoNamespaceData($namespace, $mapType, $incomingDataMap, $namespaceCollectionItem, $compareField, $composeFieldName);
+                $namespaceCollectionItem = $this->mapIncomingDataIntoNamespaceData(
+                    $namespace, $mapType, $incomingDataMap, $namespaceCollectionItem, $compareField, $composeFieldName
+                );
             }
 
             unset($namespaceCollectionItem);
@@ -117,7 +119,9 @@ class ResponseCompose
         if ($responseDataType === 'object') {
             $namespaceObject = &$namespaceData;
 
-            $namespaceObject = $this->mapIncomingDataIntoNamespaceData($namespace, $mapType, $incomingDataMap, $namespaceObject, $compareField, $composeFieldName);
+            $namespaceObject = $this->mapIncomingDataIntoNamespaceData(
+                $namespace, $mapType, $incomingDataMap, $namespaceObject, $compareField, $composeFieldName
+            );
         }
     }
 
@@ -173,15 +177,16 @@ class ResponseCompose
     }
 
     /**
+     * @param string $namespace
      * @param string $mapType
      * @param array $incomingData
      * @param $namespaceData
      * @param string $compareField
-     * @param $fieldName
+     * @param string $composeFieldName
      * @return array
      * @throws AlchemistRestfulApiException
      */
-    public function mapIncomingDataIntoNamespaceData(string $namespace, string $mapType, array $incomingData, $namespaceData, string $compareField, $fieldName): array
+    private function mapIncomingDataIntoNamespaceData(string $namespace, string $mapType, array $incomingData, $namespaceData, string $compareField, string $composeFieldName): array
     {
         if (! isset($namespaceData[$compareField])) {
             throw new AlchemistRestfulApiException(
@@ -190,7 +195,7 @@ class ResponseCompose
         }
 
         if ($mapType === 'VALUE') {
-            $namespaceData[$fieldName] = $incomingData[$namespaceData[$compareField]];
+            $namespaceData[$composeFieldName] = $incomingData[$namespaceData[$compareField]];
         } else if ($mapType === 'INNER_VALUE') {
             if (! is_array($namespaceData[$compareField])) {
                 throw new AlchemistRestfulApiException(
@@ -203,11 +208,11 @@ class ResponseCompose
                     continue;
                 }
 
-                if (!isset($namespaceData[$fieldName])) {
-                    $namespaceData[$fieldName] = [];
+                if (!isset($namespaceData[$composeFieldName])) {
+                    $namespaceData[$composeFieldName] = [];
                 }
 
-                $namespaceData[$fieldName][$key] = $incomingData[$value];
+                $namespaceData[$composeFieldName][$key] = $incomingData[$value];
             }
         }
         return $namespaceData;

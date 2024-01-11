@@ -542,4 +542,20 @@ class FieldSelector
 
         return null;
     }
+
+    /**
+     * @param string $fieldName
+     * @param string $namespace
+     * @return bool
+     */
+    public function hasField(string $fieldName, string $namespace = '$'): bool
+    {
+        try {
+            $namespaceFields = $this->flatFields($namespace, false);
+        } catch (AlchemistRestfulApiException $e) {
+            return false;
+        }
+
+        return in_array($fieldName, $namespaceFields);
+    }
 }
