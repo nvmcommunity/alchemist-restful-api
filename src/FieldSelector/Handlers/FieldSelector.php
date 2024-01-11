@@ -40,7 +40,12 @@ class FieldSelector
      */
     public function defineFieldStructure(array $selectableFields): self
     {
-        $this->selectableFields = $this->parseSelectable($selectableFields);
+        $this->selectableFields = [
+            'type' => 'collection',
+            'sub' => $this->parseSelectable($selectableFields),
+            'substitute' => null,
+            'defaultFields' => [],
+        ];
 
         return $this;
     }
@@ -51,7 +56,16 @@ class FieldSelector
      */
     public function getFieldStructure(string $namespace = '$'): ?array
     {
-        return $this->namespaceFieldStructure(['type' => 'root', 'sub' => $this->selectableFields], $namespace);
+        return $this->namespaceFieldStructure(['type' => 'root', 'sub' => $this->selectableFields['sub']], $namespace);
+    }
+
+    /**
+     * @param string $namespace
+     * @return array|null
+     */
+    public function getSubstitutes(string $namespace = '$'): ?array
+    {
+        return $this->namespaceSubstitutes($this->selectableFields, $namespace);
     }
 
     /**
@@ -344,7 +358,7 @@ class FieldSelector
 
         /** @var FieldObject $fieldObject */
         foreach ($fields as $fieldObject) {
-            $diffWithSelectableFields = array_diff_key($fields, $selectableFields);
+            $diffWithSelectableFields = array_diff_key($fields, $selectableFields['sub']);
 
             if (! empty($diffWithSelectableFields)) {
                 $isFieldValid = false;
@@ -358,7 +372,7 @@ class FieldSelector
                 return $this->deepCompareSelectableFields(
                     "$namespace.{$fieldObject->getName()}",
                     $fieldObject->getSubFields(),
-                    $selectableFields[$fieldObject->getName()]['sub'],
+                    $selectableFields['sub'][$fieldObject->getName()],
                     $errors
                 );
             }
@@ -374,6 +388,8 @@ class FieldSelector
     private function parseFields(string $fields): array
     {
         $result = [];
+
+        $fields = str_replace('{}', '', $fields);
 
         $regex = '/([\w\s]+)(?:\.limit\((\d+)\))?(?:\{(.+?)\})?(?:,|$)/';
 
@@ -434,7 +450,7 @@ class FieldSelector
         if (empty($namespace)) {
             $subs = [];
 
-            foreach ($selectableFields as $field => $structure) {
+            foreach ($selectableFields['sub'] as $field => $structure) {
                 if (isset($structure['substitute'])) {
                     $subs[$field] = $structure['substitute'];
                 }
@@ -454,9 +470,9 @@ class FieldSelector
                 return $this->namespaceSubstitutes($selectableFields, implode('.', $namespaceArr));
             }
 
-            if (isset($selectableFields[$current])) {
+            if (isset($selectableFields['sub'][$current])) {
                 unset($namespaceArr[0]);
-                return $this->namespaceSubstitutes($selectableFields[$current]['sub'], implode('.', $namespaceArr));
+                return $this->namespaceSubstitutes($selectableFields['sub'][$current], implode('.', $namespaceArr));
             }
         }
 
@@ -485,9 +501,9 @@ class FieldSelector
                 return $this->namespaceDefaultFields($fieldStructures, implode('.', $namespaceArr));
             }
 
-            if (isset($fieldStructures[$current])) {
+            if (isset($fieldStructures['sub'][$current])) {
                 unset($namespaceArr[0]);
-                return $this->namespaceDefaultFields($fieldStructures[$current], implode('.', $namespaceArr));
+                return $this->namespaceDefaultFields($fieldStructures['sub'][$current], implode('.', $namespaceArr));
             }
         }
 
