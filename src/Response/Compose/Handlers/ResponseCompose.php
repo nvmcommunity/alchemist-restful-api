@@ -64,7 +64,9 @@ class ResponseCompose
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function composeByDataMap(string $namespace, string $composeFieldName, string $mapType, string $compareField, array $incomingDataMap): void
+    public function composeByDataMap(
+        string $namespace, string $composeFieldName, string $mapType, string $compareField, array $incomingDataMap
+    ): void
     {
         $namespaceArr = explode('.', $namespace);
 
@@ -91,10 +93,6 @@ class ResponseCompose
         foreach ($incomingDataMap as $incomingDatumMap) {
             if ($fieldStructure['sub'][$composeFieldName] === 'atomic') {
                 continue;
-            }
-
-            if (is_array($incomingDatumMap)) {
-                $this->deepValidateFieldStructure(null, implode('.', $namespaceArr) .".$composeFieldName", $incomingDatumMap);
             }
         }
 
