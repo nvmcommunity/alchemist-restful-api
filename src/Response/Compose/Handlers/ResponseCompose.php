@@ -205,13 +205,14 @@ class ResponseCompose
                 );
             }
 
-            foreach ($namespaceData[$compareField] as $key => $value) {
-                if (!isset($incomingDataMap[$value])) {
-                    continue;
-                }
 
-                if (!isset($namespaceData[$composeFieldName])) {
-                    $namespaceData[$composeFieldName] = [];
+            if (! isset($namespaceData[$composeFieldName])) {
+                $namespaceData[$composeFieldName] = [];
+            }
+
+            foreach ($namespaceData[$compareField] as $key => $value) {
+                if (! isset($incomingDataMap[$value])) {
+                    continue;
                 }
 
                 $namespaceData[$composeFieldName][$key] = $incomingDataMap[$value];
