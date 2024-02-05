@@ -1,9 +1,9 @@
 <?php
-
 namespace Nvmcommunity\Alchemist\RestfulApi\Response\Compose\Handlers;
 
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
+use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\DotArrays;
 
 class ResponseCompose
 {
@@ -61,66 +61,64 @@ class ResponseCompose
         $this->responseDataType = 'object';
     }
 
-    /**
-     * @throws AlchemistRestfulApiException
-     */
-    public function composeByDataMap(
-        string $namespace, string $composeFieldName, string $mapType, string $compareField, array $incomingDataMap
-    ): void
+    public function fromCollection(array $dataCollection): self
     {
-        $namespaceArr = explode('.', $namespace);
+        $this->responseData = $dataCollection;
 
-        $namespaceData = &$this->responseData;
+        $this->responseDataType = 'collection';
 
-        $previous = [];
-        foreach ($namespaceArr as $item) {
-            $previous[] = $item;
-            $fieldStructure = $this->alchemist->fieldSelector()->getFieldStructure(implode('.', $previous));
+        return $this;
+    }
 
-            if ($fieldStructure['type'] === 'root') {
-                continue;
+    public function fromObject(array $data): self
+    {
+        $this->responseData = $data;
+
+        $this->responseDataType = 'object';
+
+        return $this;
+    }
+
+    public function compose(
+        string $namespace, string $composeFieldName, string $compareField, array $incomingDataMap): self
+    {
+        $dotFlatKey = $this->calculateDotFlatKey($namespace, $compareField);
+        $pattern = $this->calculateRegexPatternFromDotFlatKey($dotFlatKey);
+
+        $data = $this->responseData;
+
+        $flatData = DotArrays::array_dot_flatten($data, true, true, [$dotFlatKey]);
+
+        $composeFieldStruct = $this->alchemist->fieldSelector()->getFieldStructure($namespace.'.'.$composeFieldName);
+        $composeFieldStructType = $composeFieldStruct['type'];
+
+        foreach ($flatData as $dotKey => $value) {
+            $hasMatched = (bool)  preg_match("/^{$pattern}$/", $dotKey, $matches);
+
+            if ($hasMatched) {
+                $dotComposeKey = str_replace($compareField, $composeFieldName, $dotKey);
+
+                if (! is_array($value)) {
+                    if (array_key_exists($value, $incomingDataMap)) {
+                        $flatData[$dotComposeKey] = $incomingDataMap[$value];
+                    } else {
+                        $flatData[$dotComposeKey] = ($composeFieldStructType === 'collection') ? [] : null;
+                    }
+                } else {
+                    $flatData[$dotComposeKey] = array_reduce($value, function ($res, $identifier) use ($incomingDataMap) {
+                        if (isset($incomingDataMap[$identifier])) {
+                            $res[] = $incomingDataMap[$identifier];
+                        }
+
+                        return $res;
+                    }, []);
+                }
             }
-
-            $namespaceData = &$namespaceData[$item];
         }
 
-        if (in_array($fieldStructure['type'], ['collection', 'object', 'root']) === false) {
-            throw new AlchemistRestfulApiException(
-                sprintf("The `%s` namespace is not a collection or object", implode('.', $previous))
-            );
-        }
+        $this->responseData = DotArrays::array_dot_unflatten($flatData);
 
-        foreach ($incomingDataMap as $incomingDatumMap) {
-            if ($fieldStructure['sub'][$composeFieldName] === 'atomic') {
-                continue;
-            }
-        }
-
-        $responseDataType = $fieldStructure['type'];
-
-        if ($fieldStructure['type'] === 'root') {
-            $responseDataType = $this->responseDataType;
-        }
-
-        if ($responseDataType === 'collection') {
-            $namespaceCollection = &$namespaceData;
-
-            foreach ($namespaceCollection as &$namespaceCollectionItem) {
-                $namespaceCollectionItem = $this->mapIncomingDataIntoNamespaceData(
-                    $namespace, $mapType, $incomingDataMap, $namespaceCollectionItem, $compareField, $composeFieldName
-                );
-            }
-
-            unset($namespaceCollectionItem);
-        }
-
-        if ($responseDataType === 'object') {
-            $namespaceObject = &$namespaceData;
-
-            $namespaceObject = $this->mapIncomingDataIntoNamespaceData(
-                $namespace, $mapType, $incomingDataMap, $namespaceObject, $compareField, $composeFieldName
-            );
-        }
+        return $this;
     }
 
     /**
@@ -176,48 +174,55 @@ class ResponseCompose
 
     /**
      * @param string $namespace
-     * @param string $mapType
-     * @param array $incomingDataMap
-     * @param $namespaceData
      * @param string $compareField
-     * @param string $composeFieldName
-     * @return array
-     * @throws AlchemistRestfulApiException
+     * @param string $mapType
+     *
+     * @return string
      */
-    private function mapIncomingDataIntoNamespaceData(string $namespace, string $mapType, array $incomingDataMap, $namespaceData, string $compareField, string $composeFieldName): array
+    private function calculateDotFlatKey(string $namespace, string $compareField): string
     {
-        if (! isset($namespaceData[$compareField])) {
-            throw new AlchemistRestfulApiException(
-                sprintf("The `%s` field doesn't exist at `%s` namespace", $compareField, $namespace)
-            );
-        }
+        $namespaceFragments = explode('.', $namespace);
 
-        if ($mapType === 'VALUE') {
-            $namespaceData[$composeFieldName] = null;
+        $pattern = '';
+        $subNamespace = '';
+        foreach ($namespaceFragments as $namespaceFragment) {
+            $subNamespace .= $namespaceFragment;
 
-            if (isset($namespaceData[$compareField])) {
-                $namespaceData[$composeFieldName] = $incomingDataMap[$namespaceData[$compareField]] ?? null;
-            }
-        } else if ($mapType === 'INNER_VALUE') {
-            if (! is_array($namespaceData[$compareField])) {
-                throw new AlchemistRestfulApiException(
-                    sprintf("By using `INNER_VALUE` map type, the `%s` field at `%s` namespace must be type of array", $compareField, $namespace)
-                );
-            }
+            if ($namespaceFragment === '$') {
+                $subNamespace .= '.';
 
-
-            if (! isset($namespaceData[$composeFieldName])) {
-                $namespaceData[$composeFieldName] = [];
-            }
-
-            foreach ($namespaceData[$compareField] as $key => $value) {
-                if (! isset($incomingDataMap[$value])) {
-                    continue;
+                if ($this->responseDataType === 'collection') {
+                    $pattern = '*.';
                 }
 
-                $namespaceData[$composeFieldName][$key] = $incomingDataMap[$value];
+                continue;
+            }
+
+            $fieldStructure = $this->alchemist->fieldSelector()->getFieldStructure($subNamespace);
+
+            $subNamespace .= '.';
+
+            $pattern .= "{$namespaceFragment}.";
+
+            if ($fieldStructure['type'] === 'collection') {
+                $pattern .= '*.';
             }
         }
-        return $namespaceData;
+
+        $pattern .= $compareField;
+
+        return $pattern;
+    }
+
+    /**
+     * @param string $dotFlatKey
+     * @return string
+     */
+    public function calculateRegexPatternFromDotFlatKey(string $dotFlatKey): string
+    {
+        $pattern = str_replace('.', '\.', $dotFlatKey);
+        $pattern = str_replace('*', '\d+', $pattern);
+
+        return $pattern;
     }
 }
