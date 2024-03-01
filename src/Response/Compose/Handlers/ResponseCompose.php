@@ -4,6 +4,7 @@ namespace Nvmcommunity\Alchemist\RestfulApi\Response\Compose\Handlers;
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\DotArrays;
+use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Arrays;
 
 class ResponseCompose
 {
@@ -61,6 +62,10 @@ class ResponseCompose
         $this->responseDataType = 'object';
     }
 
+    /**
+     * @param array $dataCollection
+     * @return $this
+     */
     public function fromCollection(array $dataCollection): self
     {
         $this->responseData = $dataCollection;
@@ -70,6 +75,10 @@ class ResponseCompose
         return $this;
     }
 
+    /**
+     * @param array $data
+     * @return $this
+     */
     public function fromObject(array $data): self
     {
         $this->responseData = $data;
@@ -119,6 +128,70 @@ class ResponseCompose
         $this->responseData = DotArrays::array_dot_unflatten($flatData);
 
         return $this;
+    }
+
+    /**
+     * Clean redundant data from response data
+     *
+     * @return $this
+     */
+    public function cleanRedundantData(): self
+    {
+        if ($this->responseDataType === 'collection') {
+            $this->responseData = $this->cleanRedundantDataCollection($this->responseData, '$');
+        } else {
+            $this->responseData = $this->cleanRedundantDataObject($this->responseData, '$');
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array $data
+     * @param string $namespace
+     *
+     * @return array
+     */
+    private function cleanRedundantDataObject(array $data, string $namespace): array
+    {
+        $fieldStructure = $this->alchemist->fieldSelector()->getFieldStructure($namespace);
+        $inputFields = $this->alchemist->fieldSelector()->flatFields($namespace, false);
+
+        $data = Arrays::array_with_keys($data, $inputFields);
+
+        foreach ($data as $subField => $subData) {
+            $subDataType = $fieldStructure['sub'][$subField];
+
+            if (! empty($subData)) {
+                switch ($subDataType) {
+                    case 'collection':
+                        $subData = $this->cleanRedundantDataCollection($subData, "{$namespace}.{$subField}");
+                        break;
+                    case 'object':
+                        $subData = $this->cleanRedundantDataObject($subData, "{$namespace}.{$subField}");
+                        break;
+                }
+            }
+
+            $data[$subField] = $subData;
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param array $dataCollection
+     * @param string $namespace
+     *
+     * @return array
+     */
+    private function cleanRedundantDataCollection(array $dataCollection, string $namespace): array
+    {
+        foreach ($dataCollection as $index => $data) {
+            $dataCollection[$index] = $this->cleanRedundantDataObject($data, $namespace);
+        }
+
+        return $dataCollection;
     }
 
     /**
