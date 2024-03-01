@@ -11,9 +11,6 @@ class Arrays
      * @param array $array
      * @param array $keys
      * @return array
-     *
-     * @author: Vũ Văn Sáng <sangvv@getflycrm.com>
-     * @since:  26/08/2020 10:36:51
      */
     public static function array_with_keys(array $array, array $keys): array
     {
