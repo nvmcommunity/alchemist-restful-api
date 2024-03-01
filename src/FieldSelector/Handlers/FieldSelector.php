@@ -536,6 +536,11 @@ class FieldSelector
 
             if (isset($fieldStruct['sub'][$current])) {
                 unset($namespaceArr[0]);
+
+                if ($fieldStruct['sub'][$current] === 'atomic') {
+                    return ['type' => 'atomic', 'sub' => []];
+                }
+
                 return $this->namespaceFieldStructure($fieldStruct['sub'][$current], implode('.', $namespaceArr));
             }
         }
