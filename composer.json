@@ -1,9 +1,14 @@
 {
     "name": "nvmcommunity/alchemist-restful-api",
-    "description": "A library implementing Restful API interface",
+    "description": "A library that helps you quickly get a rigorous and flexible RESTful-based API interface for your application.",
     "keywords": [
+        "restful api",
+        "api interface",
+        "restful-based api interface",
+        "alchemist restful api",
         "nvmcommunity",
-        "alchemist-restful-api"
+        "nvmcommunity.io",
+        "Người Viết Mã"
     ],
     "type": "library",
     "license": "MIT",
@@ -18,7 +23,7 @@
     },
     "authors": [
         {
-            "name": "NVM Community",
+            "name": "NVM Community (Người Viết Mã)",
             "email": "nvmcommunity.io@gmail.com",
             "homepage": "https://nvmcommunity.io"
         }
