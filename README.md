@@ -4,8 +4,16 @@
 ![Project Contributors](https://img.shields.io/github/contributors/nvmcommunity/alchemist-restful-api)
 ![Project License](https://img.shields.io/github/license/nvmcommunity/alchemist-restful-api)
 
-A feature-rich library implementing RESTful API interface for PHP.
 
+![Project Stars](https://img.shields.io/github/stars/nvmcommunity/alchemist-restful-api)
+![Project Forks](https://img.shields.io/github/forks/nvmcommunity/alchemist-restful-api)
+![Project Watchers](https://img.shields.io/github/watchers/nvmcommunity/alchemist-restful-api)
+![Project Issues](https://img.shields.io/github/issues/nvmcommunity/alchemist-restful-api)
+
+<!-- Project title -->
+A library that helps you quickly get a rigorous and flexible RESTful-based API interface for your application.
+
+<!-- Project description -->
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
@@ -13,18 +21,26 @@ A feature-rich library implementing RESTful API interface for PHP.
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Basic usage](#basic-usage)
+- [More explanation about each component](#more-explanation-about-each-component)
   - [Field Selector](#field-selector)
   - [Resource Filtering](#resource-filtering)
   - [Resource Pagination](#resource-pagination)
   - [Resource Search](#resource-search)
   - [Resource Sort](#resource-sort)
-- [Combine all definitions](#combine-all-definitions)
-- [Todos](#todos)
 - [License](#license)
 
 ## Introduction
 
-Based on practical experiences from implementing API interfaces on complex software systems, I founded the project with my colleagues in NVM Community core team who built this library with set of components that cover serveral common use cases for API interface. This library will help you quickly get a robust and flexible RESTful-based API interface and add many necessary features for your application.
+Alchemist Restful API is a library that helps you quickly get a rigorous and flexible RESTful-based API interface for your application.
+
+The library provides a set of components that you can use to build your API interface, including:
+
+- **Field Selector**: Allows your API client to select the fields they want to retrieve, ensuring that all retrieved fields are within your control.
+- **Resource Filtering**: Focuses on checking whether the filtering that your API client is using is in the defined filterable list or not.
+- **Resource Pagination**: Support pagination through the offset and limit mechanism.
+- **Resource Sort**: Support for flexible result returns with data sorted based on the sort and direction specified by the API client.
+- **Resource Search**: When filtering through filter, the API client needs to clearly specify the filtering criteria. However, in the case of searching, the API client only needs to pass in the value to be searched for, and the backend will automatically define the filtering criteria from within.
+- **Resource Offset Paginator**: Support pagination through the offset and limit mechanism.
 
 ## Prerequisites
 
@@ -39,10 +55,11 @@ composer require nvmcommunity/alchemist-restful-api
 
 ## Basic usage
 
-This library acts as a layer that processes input parameters from the API client and returns the corresponding object results based on the parameters passed for processing in the later stage.
+Here is an example of how to use Alchemist Restful API to build a RESTful API interface for an Order API.
 
-### Step 1: Define all the details about an API
-Define all the details of an API on the same class, apply polymorphism in object-oriented programming.
+### Step 1: Define the API class
+
+You need to define an API class that extends the `AlchemistQueryable` class and implement the methods for field selector, resource filtering, resource pagination, resource search, and resource sort.
 
 ```php
 <?php
@@ -126,7 +143,8 @@ class OrderApiQuery extends AlchemistQueryable
 }
 ```
 ### Step 2: Process the input parameters from the API client
-Once you have defined the API class, you can use it to process the input parameters from the API client.
+
+You need to process the input parameters from the API client and pass them to the `AlchemistRestfulApi` class. The `AlchemistRestfulApi` class will then validate the input parameters and return the validated parameters to you.
 
 ```php
 <?php
@@ -151,7 +169,7 @@ $restfulApi = AlchemistRestfulApi::for(OrderApiQuery::class, $input);
 
 // Check if the input parameters are not valid, the validator will collect all errors and return them to you.
 if (! $restfulApi->validate($errorBag)->passes()) {
-    // var_dump($errorBag);
+    // var_dump(json_encode($errorBag->getErrors()));
     
     echo "validate failed"; die();
 }
@@ -184,11 +202,13 @@ $sort->getSortField();
 $sort->getDirection();
 ```
 
-## More details in each component of the library
+## More explanation about each component
+
+Below are the detailed explanations of each component that you can use to build your API interface.
 
 ### Field Selector
 
-The Field Selector is one of the features of Alchemist Restful API, it allows your API client selecting the fields that they want retrieved, ensuring that all retrieved fields are within your control. In addition, you can do the same with subsidiary fields.
+The Field Selector component allows your API client to select the fields they want to retrieve, ensuring that all retrieved fields are within your control.
 
 ```php
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
@@ -223,11 +243,7 @@ $fieldSelector = $restfulApi->fieldSelector()
 // whether your API client is selecting subsidiary fields on atomic fields that do not have subsidiary fields,
 // for example: "id{something}", where id is an atomic field and has no subsidiary fields.
 if (! $restfulApi->validate($errorBag)->passes()) {
-    // var_dump($errorBag);
-    
-    // Note: $errorBag object contains set of aggregated errors,
-    // you need to implement your own comprehensive error message,
-    // combined with your own multilingual support.
+    // var_dump(json_encode($errorBag->getErrors()));
     
     echo "validate failed"; die();
 }
@@ -245,7 +261,7 @@ var_dump($fieldSelector->fields());
 
 ### Resource Filtering
 
-As a core feature of Alchemist Restful API, it focuses on checking whether the filtering that your API client are using are in the defined filterable list or not. In addition, it also checks data types, valid filtering operations, which filtering are required, etc.
+Resource Filtering focuses on checking whether the filtering that your API client is using is in the defined filterable list or not.
 
 ```php
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
@@ -291,11 +307,8 @@ $resourceFilter->addFilteringIfNotExists('is_best_sales', 'eq', 1);
 
 // Validate your API client filtering, the same concept with field selector above
 if (! $restfulApi->validate($errorBag)->passes()) {
-    // var_dump($errorBag);
+    // var_dump(json_encode($errorBag->getErrors()));
 
-    // Note: $errorBag object contains set of aggregated errors,
-    // you need to implement your own comprehensive error message,
-    // combined with your own multilingual support.
     echo "validate failed"; die();
 }
 
@@ -314,36 +327,34 @@ var_dump($resourceFilter->filtering());
 
 #### Filtering Rules
 
-A Filtering Rules Object is used to define filtering with the following information:
+The filtering rules are defined based on the `FilteringRules` class, which contains the following information:
 
-- The name of the filtering
-- Supported operations of the filtering
-- Data type of the filtering value
-- Format of the filtering data
-- Fixed values allowed to be passed in for the filtering.
+- Filtering name: The name of the filtering that your API client will pass in.
+- Supported operators: The list of operators that your API client can use to filter the data.
+- Data type: The data type of the filtering data.
 
 **Supported filtering rules**
 
 ```php
-// String type filtering
+// `String` type is a special type that allows you to filter the data based on the string value.
 FilteringRules::String(string $filtering, array $supportedOperators)
 
-// Integer type filtering
+// `Integer` type is a special type that allows you to filter the data based on the integer value.
 FilteringRules::Integer(string $filtering, array $supportedOperators)
 
-// Numeric type filtering
+// `Number` type is a special type that allows you to filter the data based on the numeric value.
 FilteringRules::Number(string $filtering, array $supportedOperators)
 
-// Date type filtering, default format: 'Y-m-d'
+// `Date` type allow you to define the date format that your API client can use to filter the data, default format: 'Y-m-d'
 FilteringRules::Date(string $filtering, array $supportedOperators, array $formats = ['Y-m-d'])
 
-// Datetime type date time, default format: 'Y-m-d H:i:s'
+// // `Datetime` type allow you to define the date and time format that your API client can use to filter the data, default format: 'Y-m-d H:i:s'
 FilteringRules::Datetime(string $filtering, array $supportedOperators, array $formats = ['Y-m-d H:i:s'])
 
-// Enum type
+// `Enum` type is a special type that allows you to define a list of values that your API client can use to filter the data.
 FilteringRules::Enum(string $filtering, array $supportedOperators, array $enums)
 
-// Boolean type filtering: `0` (represent for false) or `1` (represent for true)
+// `Boolean` type is a special type that allows you to define a list of values that represent `0` (false) and `1` (true).
 FilteringRules::Boolean(string $filtering, array $supportedOperators = [])
 ```
 
@@ -385,7 +396,7 @@ $restfulApi = new AlchemistRestfulApi([
 ]);
 
 $resourceOffsetPaginator = $restfulApi->resourceOffsetPaginator()
-    // Set max limit for resource (don't call this method or set max limit to `0` to make your resource unlimited),
+    // Set max limit for resource (set max limit to `0` or not define it will disable max limit)
     // if limit is not passed in from the request input, the max limit parameter will override the limit parameter.
     ->defineMaxLimit(1000);
 
@@ -393,11 +404,7 @@ $resourceOffsetPaginator = $restfulApi->resourceOffsetPaginator()
 // Validate your API client pagination parameters (limit, offset), Check if the offset value passed in is negative
 // or not, and whether the limit parameter passed in exceeds the max limit (if max limit defined).
 if (! $resourceOffsetPaginator->validate($notification)->passes()) {
-    // var_dump($notification);
-
-    // Note: $errorBag object contains set of aggregated errors,
-    // you need to implement your own comprehensive error message,
-    // combined with your own multilingual support.
+    // var_dump(json_encode($errorBag->getErrors()));
 
     echo "validate failed"; die();
 }
@@ -430,12 +437,10 @@ $resourceSort = $restfulApi->resourceSort()
     // define list of field that client able to sort
     ->defineSortableFields(['id', 'created_at']);
 
+// Validate your API client sort parameters (sort, direction), Check if the sort field passed in is in the list of
+// sortable fields, and whether the direction parameter passed in is valid.
 if (! $restfulApi->validate($errorBag)->passes()) {
-    // var_dump($errorBag);
-
-    // Note: $errorBag object contains set of aggregated errors,
-    // you need to implement your own comprehensive error message,
-    // combined with your own multilingual support.
+    // var_dump(json_encode($errorBag->getErrors()));
 
     echo "validate failed"; die();
 }
@@ -468,7 +473,6 @@ $search = $resourceSearch->search();
 // Combine with the use of an ORM/Query Builder
 ExampleOrderQueryBuilder::where($search->getSearchCondition(), 'like', "%{$search->getSearchValue()}%");
 ```
-
 
 ## License
 
