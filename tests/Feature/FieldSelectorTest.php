@@ -1,6 +1,6 @@
 <?php
 
-namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers;
+namespace Feature;
 
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
@@ -14,7 +14,7 @@ class FieldSelectorTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_select_field_in_normal_case_must_not_pass(): void
+    public function test_when_select_field_in_normal_case_must_pass(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => 'id,order_date,product{product_id,product_name,attributes{attribute_id,attribute_name}}'
@@ -113,7 +113,7 @@ class FieldSelectorTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_fields_parameter_with_object_field_must_pass()
+    public function test_when_fields_parameter_with_object_field_must_pass(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => 'id,product{id,name}'
@@ -135,7 +135,7 @@ class FieldSelectorTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_fields_parameter_with_object_field_and_their_sub_fields_then_corresponding_field_must_be_returned()
+    public function test_when_fields_parameter_with_object_field_and_their_sub_fields_then_corresponding_field_must_be_returned(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => 'product{id,name}'
@@ -163,7 +163,7 @@ class FieldSelectorTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_fields_parameter_with_object_field_and_empty_sub_fields_then_default_fields_must_be_returned()
+    public function test_when_fields_parameter_with_object_field_and_empty_sub_fields_then_default_fields_must_be_returned(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => 'product{}'
@@ -186,7 +186,7 @@ class FieldSelectorTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_fields_parameter_with_nested_object_field_and_empty_sub_fields_then_default_fields_must_be_returned()
+    public function test_when_fields_parameter_with_nested_object_field_and_empty_sub_fields_then_default_fields_must_be_returned(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => 'product{category}'

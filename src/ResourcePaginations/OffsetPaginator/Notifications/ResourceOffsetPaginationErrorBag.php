@@ -4,6 +4,8 @@ namespace Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\
 
 class ResourceOffsetPaginationErrorBag
 {
+    public const MAX_LIMIT_REACHED = 'MAX_LIMIT_REACHED';
+    public const NEGATIVE_OFFSET = 'NEGATIVE_OFFSET';
     /**
      * Has passed all the tests.
      *
@@ -59,15 +61,15 @@ class ResourceOffsetPaginationErrorBag
 
         if ($this->isMaxLimitReached()) {
             $messages[] = [
-                'error_code' => 'MAX_LIMIT_REACHED',
-                'error_message' => "The limit passed in exceeds the maximum limit.",
+                'error_code' => static::MAX_LIMIT_REACHED,
+                'error_message' => "You have passed in a limit that exceeds the maximum limit.",
             ];
         }
 
         if ($this->isNegativeOffset()) {
             $messages[] = [
-                'error_code' => 'NEGATIVE_OFFSET',
-                'error_message' => "Offset passed in a negative value.",
+                'error_code' => static::NEGATIVE_OFFSET,
+                'error_message' => "You have passed in a negative offset. Offset must be a positive integer.",
             ];
         }
 

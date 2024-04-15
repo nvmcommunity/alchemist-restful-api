@@ -6,6 +6,9 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\InvalidFilteringVal
 
 class ResourceFilterErrorBag
 {
+    public const MISSING_REQUIRED_FILTERING = 'MISSING_REQUIRED_FILTERING';
+    public const INVALID_FILTERING = 'INVALID_FILTERING';
+    public const INVALID_FILTERING_VALUE = 'INVALID_FILTERING_VALUE';
     /**
      * Has passed all the tests.
      *
@@ -78,15 +81,15 @@ class ResourceFilterErrorBag
 
         if ($this->hasInvalidFiltering()) {
             $messages[] = [
-                'error_code' => 'INVALID_FILTERING',
-                'error_message' => "The filtering passed in is invalid.",
+                'error_code' => static::INVALID_FILTERING,
+                'error_message' => "You have passed in invalid filtering.",
                 'error_filtering' => $this->getInvalidFiltering(),
             ];
         }
 
         if ($this->hasInvalidFilteringValue()) {
 
-            $invalidFilteringValue = array_map(function($e) {
+            $invalidFilteringValue = array_map(static function($e) {
                 $data = [];
 
                 $data[] = $e->getFiltering();
@@ -104,16 +107,16 @@ class ResourceFilterErrorBag
             } , $this->getInvalidFilteringValue());
 
             $messages[] = [
-                'error_code' => 'INVALID_FILTERING_VALUE',
-                'error_message' => "The filtering passed in contains invalid value.",
+                'error_code' => static::INVALID_FILTERING_VALUE,
+                'error_message' => "You have passed in invalid filtering value.",
                 'error_filtering' => $invalidFilteringValue,
             ];
         }
 
         if ($this->hasMissingRequiredFiltering()) {
             $messages[] = [
-                'error_code' => 'MISSING_REQUIRED_FILTERING',
-                'error_message' => "Missing required filtering",
+                'error_code' => static::MISSING_REQUIRED_FILTERING,
+                'error_message' => "You have missed required filtering.",
                 'error_filtering' => $this->getMissingRequiredFiltering(),
             ];
         }

@@ -17,6 +17,7 @@ A library that helps you quickly get a rigorous and flexible RESTful-based API i
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
+- [Changelog](#changelog)
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -28,6 +29,12 @@ A library that helps you quickly get a rigorous and flexible RESTful-based API i
   - [Resource Search](#resource-search)
   - [Resource Sort](#resource-sort)
 - [License](#license)
+
+## Changelog
+
+- **1.0.0**: Initial release
+- **2.0.0**: Add support for new way to define object and collection field structure
+- **2.0.1**: Add support for Adapter to change parameter name in request input
 
 ## Introduction
 

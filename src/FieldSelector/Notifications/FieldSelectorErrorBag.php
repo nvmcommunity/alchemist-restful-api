@@ -4,6 +4,8 @@ namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications;
 
 class FieldSelectorErrorBag
 {
+    public const UNSELECTABLE_FIELD = 'UNSELECTABLE_FIELD';
+
     /**
      * Has passed all the tests.
      *
@@ -65,10 +67,10 @@ class FieldSelectorErrorBag
 
         if ($this->hasUnselectableFields()) {
             $messages[] = [
-                'error_code' => 'UNSELECTABLE_FIELD',
-                'error_message' => "Error selecting fields not defined in the selectable fields.",
+                'error_code' => static::UNSELECTABLE_FIELD,
+                'error_message' => "You are trying to select fields that are not selectable.",
                 'error_namespace' => $this->getNamespace(),
-                'error_fields' => $this->getUnselectableFields()
+                'error_fields' => $this->getUnselectableFields(),
             ];
         }
 

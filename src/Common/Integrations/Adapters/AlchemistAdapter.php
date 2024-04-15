@@ -5,6 +5,11 @@ namespace Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\Adapters;
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\CompoundErrors;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ErrorBag;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers\ResourceFilter;
+use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Handlers\ResourceOffsetPaginator;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers\ResourceSearch;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Handlers\ResourceSort;
 
 class AlchemistAdapter
 {
@@ -17,7 +22,7 @@ class AlchemistAdapter
      * @param AlchemistRestfulApi $alchemistRestfulApi
      * @return void
      */
-    function for(AlchemistRestfulApi $alchemistRestfulApi): void
+    public function for(AlchemistRestfulApi $alchemistRestfulApi): void
     {
         $this->alchemistRestfulApi = $alchemistRestfulApi;
     }
@@ -55,8 +60,57 @@ class AlchemistAdapter
                 $messages['sort'] = $errors->resourceSort->getMessages();
             }
 
-
             return $messages;
         });
+    }
+
+    /**
+     * @return string[]
+     */
+    public function componentUses(): array
+    {
+        return [
+            FieldSelector::class,
+            ResourceFilter::class,
+            ResourceOffsetPaginator::class,
+            ResourceSort::class,
+            ResourceSearch::class
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function componentConfigs(): array
+    {
+        return [
+            FieldSelector::class => [
+                'request_params' => [
+                    'fields_param' => 'fields',
+                ]
+            ],
+            ResourceFilter::class => [
+                'request_params' => [
+                    'filtering_param' => 'filtering',
+                ]
+            ],
+            ResourceOffsetPaginator::class => [
+                'request_params' => [
+                    'limit_param' => 'limit',
+                    'offset_param' => 'offset',
+                ]
+            ],
+            ResourceSort::class => [
+                'request_params' => [
+                    'sort_param' => 'sort',
+                    'direction_param' => 'direction',
+                ]
+            ],
+            ResourceSearch::class => [
+                'request_params' => [
+                    'search_param' => 'search',
+                ]
+            ]
+        ];
     }
 }

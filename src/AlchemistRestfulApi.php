@@ -7,11 +7,16 @@ use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\Adapters\AlchemistAdap
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\AlchemistQueryable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\CompoundErrors;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ErrorBag;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers\ResourceFilter;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\ResourceFilterable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\FieldSelectable;
+use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Handlers\ResourceOffsetPaginator;
 use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\ResourceOffsetPaginate;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers\ResourceSearch;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\ResourceSearchable;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Handlers\ResourceSort;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\ResourceSortable;
 use Nvmcommunity\Alchemist\RestfulApi\Response\Compose\ResourceResponsible;
 
@@ -28,61 +33,36 @@ class AlchemistRestfulApi
 
     /**
      * @param array $requestInput
+     * @param AlchemistAdapter|null $adapter
      * @throws AlchemistRestfulApiException
      */
-    public function __construct(array $requestInput)
+    public function __construct(array $requestInput, ?AlchemistAdapter $adapter = null)
     {
-        if ($this->isModuleEnable(FieldSelectable::class)) {
-            if (isset($requestInput['fields']) && ! is_string($requestInput['fields'])) {
-                throw new AlchemistRestfulApiException('The `fields` request input parameter must be type of string');
-            }
+        $adapter = $adapter ?? new AlchemistAdapter;
 
-            $this->initFieldSelector($requestInput['fields'] ?? '');
+        $this->setAdapter($adapter);
+
+        if ($this->isComponentUses(FieldSelector::class)) {
+            $this->initFieldSelector($requestInput);
         }
 
-        if ($this->isModuleEnable(ResourceFilterable::class)) {
-            if (isset($requestInput['filtering']) && ! is_array($requestInput['filtering'])) {
-                throw new AlchemistRestfulApiException('The `filtering` request input parameter must be type of array');
-            }
-
-            $this->initResourceFilter($requestInput['filtering'] ?? []);
+        if ($this->isComponentUses(ResourceFilter::class)) {
+            $this->initResourceFilter($requestInput);
         }
 
-        if ($this->isModuleEnable(ResourceOffsetPaginate::class)) {
-            if (isset($requestInput['limit']) && ! Numerics::isIntegerValue($requestInput['limit'])) {
-                throw new AlchemistRestfulApiException('The `limit` request input parameter must be type of integer');
-            }
-
-            if (isset($requestInput['offset']) && ! Numerics::isIntegerValue($requestInput['offset'])) {
-                throw new AlchemistRestfulApiException('The `offset` request input parameter must be type of integer');
-            }
-
-            $this->initResourceOffsetPaginator($requestInput['limit'] ?? 0, $requestInput['offset'] ?? 0);
+        if ($this->isComponentUses(ResourceOffsetPaginator::class)) {
+            $this->initResourceOffsetPaginator($requestInput);
         }
 
-        if ($this->isModuleEnable(ResourceSortable::class)) {
-            if (isset($requestInput['sort']) && ! is_string($requestInput['sort'])) {
-                throw new AlchemistRestfulApiException('The `sort` request input parameter must be type of string');
-            }
-
-            if (isset($requestInput['direction']) && ! is_string($requestInput['direction'])) {
-                throw new AlchemistRestfulApiException('The `direction` request input parameter must be type of string');
-            }
-
-            $this->initResourceSort($requestInput['sort'] ?? '', $requestInput['direction'] ?? '');
+        if ($this->isComponentUses(ResourceSort::class)) {
+            $this->initResourceSort($requestInput);
         }
 
-        if ($this->isModuleEnable(ResourceSearchable::class)) {
-            if (isset($requestInput['search']) && ! is_string($requestInput['search'])) {
-                throw new AlchemistRestfulApiException('The `search` request input parameter must be type of string');
-            }
-
-            $this->initResourceSearch($requestInput['search'] ?? '');
+        if ($this->isComponentUses(ResourceSearch::class)) {
+            $this->initResourceSearch($requestInput);
         }
 
         $this->initResponseCompose($this);
-
-        $this->setAdapter(new AlchemistAdapter);
     }
 
     /**
@@ -137,35 +117,36 @@ class AlchemistRestfulApi
     }
 
     /**
-     * @param string $className
+     * @param string $apiClass
      * @param array $requestInput
+     * @param AlchemistAdapter|null $adapter
      * @return AlchemistRestfulApi
      * @throws AlchemistRestfulApiException
      */
-    public static function for(string $className, array $requestInput): self
+    public static function for(string $apiClass, array $requestInput, ?AlchemistAdapter $adapter = null): self
     {
-        /** @var AlchemistQueryable $className */
+        /** @var AlchemistQueryable $apiClass */
 
-        $instance = new self($requestInput);
+        $instance = new self($requestInput, $adapter);
 
         if ($instance->isModuleEnable(FieldSelectable::class)) {
-            $className::fieldSelector($instance->fieldSelector());
+            $apiClass::fieldSelector($instance->fieldSelector());
         }
 
         if ($instance->isModuleEnable(ResourceFilterable::class)) {
-            $className::resourceFilter($instance->resourceFilter());
+            $apiClass::resourceFilter($instance->resourceFilter());
         }
 
         if ($instance->isModuleEnable(ResourceOffsetPaginate::class)) {
-            $className::resourceOffsetPaginator($instance->resourceOffsetPaginator());
+            $apiClass::resourceOffsetPaginator($instance->resourceOffsetPaginator());
         }
 
         if ($instance->isModuleEnable(ResourceSortable::class)) {
-            $className::resourceSort($instance->resourceSort());
+            $apiClass::resourceSort($instance->resourceSort());
         }
 
         if ($instance->isModuleEnable(ResourceSearchable::class)) {
-            $className::resourceSearch($instance->resourceSearch());
+            $apiClass::resourceSearch($instance->resourceSearch());
         }
 
         return $instance;
@@ -188,5 +169,14 @@ class AlchemistRestfulApi
         $this->adapter = $adapter;
 
         $this->adapter->for($this);
+    }
+
+    /**
+     * @param string $componentClass
+     * @return bool
+     */
+    final public function isComponentUses(string $componentClass): bool
+    {
+        return in_array($componentClass, $this->adapter->componentUses());
     }
 }

@@ -4,6 +4,8 @@ namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Notifications;
 
 class ResourceSortErrorBag
 {
+    public const INVALID_DIRECTION = 'INVALID_DIRECTION';
+    public const INVALID_SORT_FIELD = 'INVALID_SORT_FIELD';
     /**
      * Has passed all the tests.
      *
@@ -55,15 +57,15 @@ class ResourceSortErrorBag
 
         if ($this->isInvalidDirection()) {
             $messages[] = [
-                'error_code' => 'INVALID_DIRECTION',
-                'error_message' => "The direction passed in a invalid value.",
+                'error_code' => static::INVALID_DIRECTION,
+                'error_message' => "You are trying to sort by an invalid direction.",
             ];
         }
 
         if ($this->isInvalidSortField()) {
             $messages[] = [
-                'error_code' => 'INVALID_SORT_FIELD',
-                'error_message' => "The sort passed in a invalid value.",
+                'error_code' => static::INVALID_SORT_FIELD,
+                'error_message' => "You are trying to sort by a field that is not supported.",
             ];
         }
 
