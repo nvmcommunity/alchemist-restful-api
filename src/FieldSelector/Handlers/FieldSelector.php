@@ -340,6 +340,10 @@ class FieldSelector
      */
     private function deepCompareSelectableFields(string $namespace, array $fields, $selectableFields, &$errors): bool
     {
+        if (empty($selectableFields['sub'])) {
+            return true;
+        }
+
         $isFieldValid = true;
 
         /** @var FieldObject $fieldObject */

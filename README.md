@@ -124,6 +124,7 @@ class OrderApiQuery extends AlchemistQueryable
     public static function resourceOffsetPaginator(ResourceOffsetPaginator $resourceOffsetPaginator): void
     {
         $resourceOffsetPaginator
+            ->defineDefaultLimit(10)
             ->defineMaxLimit(1000);
     }
 
