@@ -61,7 +61,7 @@ class ResourceOffsetPaginator
      */
     public function offsetPaginate(): OffsetPaginateObject
     {
-        return new OffsetPaginateObject($this->limit ?: $this->defaultLimit, $this->offset, $this->maxLimit);
+        return new OffsetPaginateObject($this->limit ?: $this->defaultLimit ?: $this->maxLimit, $this->offset, $this->maxLimit);
     }
 
     /**
