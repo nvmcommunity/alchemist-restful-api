@@ -340,15 +340,11 @@ class FieldSelector
      */
     private function deepCompareSelectableFields(string $namespace, array $fields, $selectableFields, &$errors): bool
     {
-        if (empty($selectableFields['sub'])) {
-            return true;
-        }
-
         $isFieldValid = true;
 
         /** @var FieldObject $fieldObject */
         foreach ($fields as $fieldObject) {
-            $diffWithSelectableFields = array_diff_key($fields, $selectableFields['sub']);
+            $diffWithSelectableFields = array_diff_key($fields, $selectableFields['sub'] ?? []);
 
             if (! empty($diffWithSelectableFields)) {
                 $isFieldValid = false;

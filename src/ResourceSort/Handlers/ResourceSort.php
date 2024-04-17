@@ -96,7 +96,7 @@ class ResourceSort
             $invalidDirection = true;
         }
 
-        if (! empty($this->sortField) && ! empty($this->sortableFields) && ! in_array($this->sortField, $this->sortableFields, true)) {
+        if (! empty($this->sortField) && (empty($this->sortableFields) || ! in_array($this->sortField, $this->sortableFields, true))) {
             $passes = false;
             $invalidSortField = true;
         }
