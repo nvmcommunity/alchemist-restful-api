@@ -10,6 +10,10 @@ class ResourceOffsetPaginator
     /**
      * @var int
      */
+    private int $defaultLimit = 0;
+    /**
+     * @var int
+     */
     private int $maxLimit = 0;
     /**
      * @var int
@@ -31,6 +35,17 @@ class ResourceOffsetPaginator
     }
 
     /**
+     * @param int $defaultLimit
+     * @return ResourceOffsetPaginator
+     */
+    public function defineDefaultLimit(int $defaultLimit): self
+    {
+        $this->defaultLimit = $defaultLimit;
+
+        return $this;
+    }
+
+    /**
      * @param int $maxLimit
      * @return ResourceOffsetPaginator
      */
@@ -46,7 +61,7 @@ class ResourceOffsetPaginator
      */
     public function offsetPaginate(): OffsetPaginateObject
     {
-        return new OffsetPaginateObject($this->limit ?: $this->maxLimit, $this->offset, $this->maxLimit);
+        return new OffsetPaginateObject($this->limit ?: $this->defaultLimit, $this->offset, $this->maxLimit);
     }
 
     /**

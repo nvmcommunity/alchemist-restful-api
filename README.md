@@ -403,8 +403,10 @@ $restfulApi = new AlchemistRestfulApi([
 ]);
 
 $resourceOffsetPaginator = $restfulApi->resourceOffsetPaginator()
-    // Set max limit for resource (set max limit to `0` or not define it will disable max limit)
-    // if limit is not passed in from the request input, the max limit parameter will override the limit parameter.
+    // Define default limit for resource
+    ->defineDefaultLimit(10)
+
+     // Define max limit for resource (set max limit to `0` or not define it will disable max limit)
     ->defineMaxLimit(1000);
 
 

@@ -2,6 +2,7 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Handlers;
 
+use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Notifications\ResourceSortErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Objects\ResourceSortObject;
 
@@ -25,7 +26,7 @@ class ResourceSort
     /**
      * @var string
      */
-    private string $defaultSortField;
+    private string $defaultSortField = '';
     /**
      * @var string
      */
@@ -66,9 +67,14 @@ class ResourceSort
     /**
      * @param string $direction
      * @return ResourceSort
+     * @throws AlchemistRestfulApiException
      */
     public function defineDefaultDirection(string $direction): self
     {
+        if (! in_array($direction, ['asc', 'desc'], true)) {
+            throw new AlchemistRestfulApiException('Invalid default sort direction, it must be either `asc` or `desc`.');
+        }
+
         $this->defaultSortDirection = $direction;
 
         return $this;

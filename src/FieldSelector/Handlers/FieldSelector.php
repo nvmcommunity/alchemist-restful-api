@@ -56,6 +56,10 @@ class FieldSelector
      */
     public function getFieldStructure(string $namespace = '$'): ?array
     {
+        if (empty($this->selectableFields)) {
+            return null;
+        }
+
         return $this->namespaceFieldStructure(['type' => 'root', 'sub' => $this->selectableFields['sub']], $namespace);
     }
 
@@ -210,7 +214,6 @@ class FieldSelector
      * @param string $namespace
      * @param string[] $withFieldNames
      * @return FieldObject[]
-     * @throws AlchemistRestfulApiException
      */
     public function fields(string $namespace = '$', array $withFieldNames = []): array
     {
@@ -221,13 +224,6 @@ class FieldSelector
         if (empty($namespaceFields)) {
             $namespaceFields = $this->namespaceDefaultFields($this->selectableFields, $namespace);
         }
-
-        if (! $namespaceFields) {
-            throw new AlchemistRestfulApiException(
-                sprintf("cannot find fields with `%s` namespace", $namespace)
-            );
-        }
-
 
         if (empty($withFieldNames)) {
             return $namespaceFields;
@@ -251,7 +247,6 @@ class FieldSelector
      * @param bool $substitute
      * @param string[] $withFieldNames
      * @return string[]
-     * @throws AlchemistRestfulApiException
      */
     public function flatFields(string $namespace = '$', bool $substitute = true, array $withFieldNames = []): array
     {
@@ -279,20 +274,12 @@ class FieldSelector
      * @param string $namespace
      * @param string[] $withoutFieldNames
      * @return FieldObject[]
-     * @throws AlchemistRestfulApiException
      */
     public function withoutFields(string $namespace = '$', array $withoutFieldNames = []): array
     {
         $fields = $this->fields ?: $this->defaultFields;
 
         $namespaceFields = $this->namespaceFields($fields, $namespace);
-
-        if (! $namespaceFields) {
-            throw new AlchemistRestfulApiException(
-                sprintf("cannot find fields with `%s` namespace", $namespace)
-            );
-        }
-
 
         if (empty($withoutFieldNames)) {
             return $namespaceFields;
@@ -315,7 +302,6 @@ class FieldSelector
      * @param string $namespace
      * @param string[] $withoutFieldNames
      * @return string[]
-     * @throws AlchemistRestfulApiException
      */
     public function flatWithoutFields(string $namespace = '$', array $withoutFieldNames = []): array
     {
@@ -450,7 +436,7 @@ class FieldSelector
         if (empty($namespace)) {
             $subs = [];
 
-            foreach ($selectableFields['sub'] as $field => $structure) {
+            foreach ($selectableFields['sub'] ?? [] as $field => $structure) {
                 if (isset($structure['substitute'])) {
                     $subs[$field] = $structure['substitute'];
                 }
@@ -487,7 +473,7 @@ class FieldSelector
     private function namespaceDefaultFields(array $fieldStructures, string $namespace): ?array
     {
         if (empty($namespace)) {
-            return $this->parseFields(implode(',', $fieldStructures['defaultFields']));
+            return $this->parseFields(implode(',', $fieldStructures['defaultFields'] ?? []));
         }
 
         $namespaceArr = explode('.', $namespace);

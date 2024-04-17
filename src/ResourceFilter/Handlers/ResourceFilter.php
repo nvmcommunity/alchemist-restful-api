@@ -88,23 +88,23 @@ class ResourceFilter
     #---------------------------------------------------------------------------#
 
     /**
-     * @param string $filteringDotName
+     * @param string $filteringName
      * @param string|null $filteringOperator
      *
      * @return bool
      */
-    public function hasFiltering(string $filteringDotName, ?string $filteringOperator = null): bool
+    public function hasFiltering(string $filteringName, ?string $filteringOperator = null): bool
     {
         if (empty($filteringOperator)) {
-            return isset($this->filteringMap[$filteringDotName]);
+            return isset($this->filteringMap[$filteringName]);
         }
 
         if ($filteringOperator === 'eq' || $filteringOperator === 'is') {
-            return isset($this->filteringMap[$filteringDotName]['eq'])
-                || isset($this->filteringMap[$filteringDotName]['is']);
+            return isset($this->filteringMap[$filteringName]['eq'])
+                || isset($this->filteringMap[$filteringName]['is']);
         }
 
-        return isset($this->filteringMap[$filteringDotName][$filteringOperator]);
+        return isset($this->filteringMap[$filteringName][$filteringOperator]);
     }
 
     /**
@@ -137,30 +137,22 @@ class ResourceFilter
     }
 
     /**
-     * @param string $filteringDotName
+     * @param string $filteringName
      * @param string $filteringOperator
      * @param $filteringValue
      * @return ResourceFilter
-     *
-     * @throws FilteringInvalidRuleException
      */
-    public function addFilteringIfNotExists(string $filteringDotName, string $filteringOperator, $filteringValue): ResourceFilter
+    public function addFilteringIfNotExists(string $filteringName, string $filteringOperator, $filteringValue): ResourceFilter
     {
-        if ($this->hasFiltering($filteringDotName, $filteringOperator)) {
+        if ($this->hasFiltering($filteringName, $filteringOperator)) {
             return $this;
         }
 
-        Arrays::dotSet($this->filtering, "{$filteringDotName}:{$filteringOperator}", $filteringValue);
+        Arrays::dotSet($this->filtering, "{$filteringName}:{$filteringOperator}", $filteringValue);
 
-        $filteringRule = $this->getFilteringRuleByDotName($filteringDotName);
+        Arrays::initFirst($this->filteringMap, $filteringName, []);
 
-        if ($filteringRule === null) {
-            throw new FilteringInvalidRuleException($filteringDotName);
-        }
-
-        Arrays::initFirst($this->filteringMap, $filteringDotName, []);
-
-        $this->filteringMap[$filteringDotName][$filteringOperator] = $filteringValue;
+        $this->filteringMap[$filteringName][$filteringOperator] = $filteringValue;
 
         return $this;
     }
@@ -178,16 +170,18 @@ class ResourceFilter
             foreach ($map as $filteringOperator => $filteringValue) {
                 $conditionOperator = $this->getConditionOperatorByFilteringOperator($filteringOperator);
 
-                switch ($filteringRule->getType()) {
-                    case FilteringRules::TYPE_NUMBER:
-                        $conditionValue = is_numeric($filteringValue) ? (float) $filteringValue : $filteringValue;
-                        break;
-                    case FilteringRules::TYPE_INTEGER:
-                        $conditionValue = filter_var($filteringValue, FILTER_VALIDATE_INT) ?: $filteringValue;
-                        break;
-                    default:
-                        $conditionValue = $filteringValue;
-                        break;
+                if ($filteringRule) {
+                    switch ($filteringRule->getType()) {
+                        case FilteringRules::TYPE_NUMBER:
+                            $conditionValue = is_numeric($filteringValue) ? (float) $filteringValue : $filteringValue;
+                            break;
+                        case FilteringRules::TYPE_INTEGER:
+                            $conditionValue = filter_var($filteringValue, FILTER_VALIDATE_INT) ?: $filteringValue;
+                            break;
+                        default:
+                            $conditionValue = $filteringValue;
+                            break;
+                    }
                 }
 
                 // $conditionNameWithOperator = ($conditionOperator !== '=') ? "{$filteringDotName}#{$conditionOperator}" : $filteringDotName;
@@ -362,7 +356,7 @@ class ResourceFilter
      */
     private function getConditionOperatorByFilteringOperator(string $filteringOperator): ?string
     {
-        return self::MAP_OPERATOR_BETWEEN_FILTER_VS_CONDITION[$filteringOperator] ?? null;
+        return self::MAP_OPERATOR_BETWEEN_FILTER_VS_CONDITION[$filteringOperator] ?? $filteringOperator;
     }
 
     /**

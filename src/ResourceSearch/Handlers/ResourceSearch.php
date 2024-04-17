@@ -14,7 +14,7 @@ class ResourceSearch
     /**
      * @var string
      */
-    private string $searchCondition;
+    private string $searchCondition = '';
 
     /**
      * @param string $searchValue
