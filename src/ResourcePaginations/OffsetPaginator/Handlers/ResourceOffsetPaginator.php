@@ -48,8 +48,8 @@ class ResourceOffsetPaginator
         $this->offsetParam = $offsetParam;
         $this->originalInput = $input;
 
-        $this->limit = is_int($input[$limitParam]) ? $input[$limitParam] : 0;
-        $this->offset = is_int($input[$offsetParam]) ? $input[$offsetParam] : 0;
+        $this->limit = filter_var($input[$limitParam], FILTER_VALIDATE_INT) !== false ? $input[$limitParam] : 0;
+        $this->offset = filter_var($input[$offsetParam], FILTER_VALIDATE_INT) !== false ? $input[$offsetParam] : 0;
     }
 
     /**
@@ -93,11 +93,11 @@ class ResourceOffsetPaginator
         $maxLimitReached = false;
         $invalidInputTypes = [];
 
-        if (! is_null($this->originalInput[$this->limitParam]) && ! is_int($this->originalInput[$this->limitParam])) {
+        if (! is_null($this->originalInput[$this->limitParam]) && filter_var($this->originalInput[$this->limitParam], FILTER_VALIDATE_INT) === false) {
             $invalidInputTypes[] = $this->limitParam;
         }
 
-        if (! is_null($this->originalInput[$this->offsetParam]) && ! is_int($this->originalInput[$this->offsetParam])) {
+        if (! is_null($this->originalInput[$this->offsetParam]) && filter_var($this->originalInput[$this->offsetParam], FILTER_VALIDATE_INT) === false) {
             $invalidInputTypes[] = $this->offsetParam;
         }
 
