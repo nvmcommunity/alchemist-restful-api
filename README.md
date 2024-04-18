@@ -69,7 +69,7 @@ If you are using Laravel, you can install another package called `laravel-eloque
 ```bash
 composer require nvmcommunity/laravel-eloquent-api
 ```
-
+See more details about how to use `nvmcommunity/laravel-eloquent-api` package at  in the [Laravel Eloquent API Documentation](https://packagist.org/packages/nvmcommunity/laravel-eloquent-api)
 ## Basic usage
 
 Here is an example of how to use Alchemist Restful API to build a RESTful API interface for an Order API.
@@ -390,21 +390,21 @@ This table also describes the structure of filtering values for special data typ
 
 **Supported operators**
 
-| Request Operator | Target Operator | Meaning                | Value Structure                        |
-|------------------|-----------------|------------------------|----------------------------------------|
-| eq               | \=              | equal                  | \<value\>                              |
-| ne               | \!=             | not equal              | \<value\>                              |
-| lt               | \<              | lower than             | \<value\>                              |
-| gt               | \>              | greater than           | \<value\>                              |
-| lte              | \<=             | lower than or equal    | \<value\>                              |
-| gte              | \>=             | greater than or equal  | \<value\>                              |
-| contains         | contains _(*)_  | contains               | \<value\>                              |
-| between          | between         | between                | array(\<value[0]\>, \<value[1]\>)      |
-| not_between      | not between     | not between            | array(\<value[0]\>, \<value[1]\>)      |
-| in               | in              | in                     | array(\<value[0]\>, \<value[1]\>, ...) |
-| not_in           | not in          | not in                 | array(\<value[0]\>, \<value[1]\>, ...) |
+| Request Operator | Target Operator    | Meaning                | Value Structure                        |
+|------------------|--------------------|------------------------|----------------------------------------|
+| eq               | \=                 | equal                  | \<value\>                              |
+| ne               | \!=                | not equal              | \<value\>                              |
+| lt               | \<                 | lower than             | \<value\>                              |
+| gt               | \>                 | greater than           | \<value\>                              |
+| lte              | \<=                | lower than or equal    | \<value\>                              |
+| gte              | \>=                | greater than or equal  | \<value\>                              |
+| contains         | contains _(*)_     | contains               | \<value\>                              |
+| between          | between _(*)_      | between                | array(\<value[0]\>, \<value[1]\>)      |
+| not_between      | not_between _(*)_  | not between            | array(\<value[0]\>, \<value[1]\>)      |
+| in               | in _(*)_           | in                     | array(\<value[0]\>, \<value[1]\>, ...) |
+| not_in           | not_in _(*)_       | not in                 | array(\<value[0]\>, \<value[1]\>, ...) |
 
-_(*) Be careful with this operation, you need to handle additional processing to convert it to the native operator of the database management system._
+_(*) Be careful with these operators, because they are not native operators in any database, you need to handle them manually._
 
 ### Resource Pagination
 
