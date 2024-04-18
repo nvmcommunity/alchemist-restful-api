@@ -65,7 +65,7 @@ trait ResourceFilterable
 
         $filteringParam = $componentConfig[ResourceFilter::class]['request_params']['filtering_param'];
 
-        $this->resourceFilter = new ResourceFilter($requestInput[$filteringParam] ?? []);
+        $this->resourceFilter = new ResourceFilter($requestInput[$filteringParam] ?? null);
     }
 
     /**

@@ -84,15 +84,10 @@ trait ResourceOffsetPaginate
         $limitParam  = $componentConfig[ResourceOffsetPaginator::class]['request_params']['limit_param'];
         $offsetParam = $componentConfig[ResourceOffsetPaginator::class]['request_params']['offset_param'];
 
-        if (isset($requestInput[$limitParam]) && ! Numerics::isIntegerValue($requestInput[$limitParam])) {
-            throw new AlchemistRestfulApiException(sprintf('The `%s` request input parameter must be type of integer', $limitParam));
-        }
-
-        if (isset($requestInput[$offsetParam]) && ! Numerics::isIntegerValue($requestInput[$offsetParam])) {
-            throw new AlchemistRestfulApiException(sprintf('The `%s` request input parameter must be type of integer', $offsetParam));
-        }
-
-        $this->resourceOffsetPaginator = new ResourceOffsetPaginator($requestInput[$limitParam] ?? 0, $requestInput[$offsetParam] ?? 0);
+        $this->resourceOffsetPaginator = new ResourceOffsetPaginator($limitParam, $offsetParam, [
+            $limitParam  => $requestInput[$limitParam] ?? null,
+            $offsetParam => $requestInput[$offsetParam] ?? null,
+        ]);
     }
 
     /**

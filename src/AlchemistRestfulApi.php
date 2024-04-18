@@ -54,12 +54,12 @@ class AlchemistRestfulApi
             $this->initResourceOffsetPaginator($requestInput);
         }
 
-        if ($this->isComponentUses(ResourceSort::class)) {
-            $this->initResourceSort($requestInput);
-        }
-
         if ($this->isComponentUses(ResourceSearch::class)) {
             $this->initResourceSearch($requestInput);
+        }
+
+        if ($this->isComponentUses(ResourceSort::class)) {
+            $this->initResourceSort($requestInput);
         }
 
         $this->initResponseCompose($this);
@@ -75,7 +75,7 @@ class AlchemistRestfulApi
 
         $passes = true;
 
-        if ($this->isModuleEnable(FieldSelectable::class)) {
+        if ($this->isComponentUses(FieldSelector::class)) {
             if (! $this->fieldSelector()->validate($fieldSelectorErrorBag)->passes()) {
                 $passes = false;
 
@@ -83,7 +83,7 @@ class AlchemistRestfulApi
             }
         }
 
-        if ($this->isModuleEnable(ResourceFilterable::class)) {
+        if ($this->isComponentUses(ResourceFilter::class)) {
             if (! $this->resourceFilter()->validate($resourceFilterErrorBag)->passes()) {
                 $passes = false;
 
@@ -91,7 +91,7 @@ class AlchemistRestfulApi
             }
         }
 
-        if ($this->isModuleEnable(ResourceOffsetPaginate::class)) {
+        if ($this->isComponentUses(ResourceOffsetPaginator::class)) {
             if (! $this->resourceOffsetPaginator()->validate($resourceOffsetPaginatorErrorBag)->passes()) {
                 $passes = false;
 
@@ -99,7 +99,15 @@ class AlchemistRestfulApi
             }
         }
 
-        if ($this->isModuleEnable(ResourceSortable::class)) {
+        if ($this->isComponentUses(ResourceSearch::class)) {
+            if (! $this->resourceSearch()->validate($resourceSearchErrorBag)->passes()) {
+                $passes = false;
+
+                $errors->resourceSearch = $resourceSearchErrorBag;
+            }
+        }
+
+        if ($this->isComponentUses(ResourceSort::class)) {
             if (! $this->resourceSort()->validate($resourceSortErrorBag)->passes()) {
                 $passes = false;
 

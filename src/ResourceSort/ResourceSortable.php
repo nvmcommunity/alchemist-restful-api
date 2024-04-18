@@ -83,15 +83,10 @@ trait ResourceSortable
         $sortParam      = $componentConfig[ResourceSort::class]['request_params']['sort_param'];
         $directionParam = $componentConfig[ResourceSort::class]['request_params']['direction_param'];
 
-        if (isset($requestInput[$sortParam]) && ! is_string($requestInput[$sortParam])) {
-            throw new AlchemistRestfulApiException(printf("The `%s` request input parameter must be type of string", $sortParam));
-        }
-
-        if (isset($requestInput[$directionParam]) && ! is_string($requestInput[$directionParam])) {
-            throw new AlchemistRestfulApiException(sprintf('The `%s` request input parameter must be type of string', $directionParam));
-        }
-
-        $this->resourceSort = new ResourceSort($requestInput[$sortParam] ?? '', $requestInput[$directionParam] ?? '');
+        $this->resourceSort = new ResourceSort($sortParam, $directionParam, [
+            $sortParam     => $requestInput[$sortParam] ?? null,
+            $directionParam => $requestInput[$directionParam] ?? null,
+        ]);
     }
 
     /**

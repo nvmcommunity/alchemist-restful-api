@@ -12,9 +12,14 @@ use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\Structure\ObjectStru
 class FieldSelector
 {
     /**
+     * @var mixed
+     */
+    private $originalInput;
+
+    /**
      * @var FieldObject[]
      */
-    private array $fields;
+    private array $fields = [];
 
     /**
      * @var array
@@ -27,11 +32,15 @@ class FieldSelector
     private array $defaultFields = [];
 
     /**
-     * @param string $fields
+     * @param mixed $fields
      */
-    public function __construct(string $fields)
+    public function __construct($fields)
     {
-        $this->fields = $this->parseFields($fields);
+        $this->originalInput = $fields;
+
+        if (is_string($fields)) {
+            $this->fields = $this->parseFields($fields);
+        }
     }
 
     /**
@@ -322,6 +331,10 @@ class FieldSelector
      */
     public function validate(&$notification = null): FieldSelectorErrorBag
     {
+        if (! is_null($this->originalInput) && ! is_string($this->originalInput)) {
+            return $notification = new FieldSelectorErrorBag(false, '', [], true);
+        }
+
         $fields = $this->fields ?: $this->defaultFields;
 
         if (! $this->deepCompareSelectableFields('$', $fields, $this->selectableFields, $errors)) {

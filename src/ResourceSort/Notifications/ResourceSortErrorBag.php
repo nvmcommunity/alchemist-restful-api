@@ -6,6 +6,7 @@ class ResourceSortErrorBag
 {
     public const INVALID_DIRECTION = 'INVALID_DIRECTION';
     public const INVALID_SORT_FIELD = 'INVALID_SORT_FIELD';
+    public const INVALID_INPUT_TYPE = 'INVALID_INPUT_TYPE';
     /**
      * Has passed all the tests.
      *
@@ -20,16 +21,24 @@ class ResourceSortErrorBag
      * @var bool
      */
     private bool $invalidSortField;
+    /**
+     * The input type is invalid.
+     *
+     * @var array
+     */
+    private array $invalidInputTypes;
 
     /**
      * @param bool $passes
      * @param bool $invalidDirection
      * @param bool $invalidSortField
+     * @param array $invalidInputTypes
      */
-    public function __construct(bool $passes, bool $invalidDirection, bool $invalidSortField) {
+    public function __construct(bool $passes, bool $invalidDirection, bool $invalidSortField, array $invalidInputTypes) {
         $this->passes = $passes;
         $this->invalidDirection = $invalidDirection;
         $this->invalidSortField = $invalidSortField;
+        $this->invalidInputTypes = $invalidInputTypes;
     }
 
     /**
@@ -41,6 +50,7 @@ class ResourceSortErrorBag
             'passes' => $this->passes,
             'invalid_direction' => $this->invalidDirection,
             'invalid_sort_field' => $this->invalidSortField,
+            'invalid_input_parameters' => $this->invalidInputTypes,
         ];
     }
 
@@ -54,6 +64,14 @@ class ResourceSortErrorBag
         }
 
         $messages = [];
+
+        if ($this->hasInvalidInputTypes()) {
+            $messages[] = [
+                'error_code' => static::INVALID_INPUT_TYPE,
+                'error_message' => "The input type is invalid.",
+                'invalid_input_parameters' => $this->invalidInputTypes,
+            ];
+        }
 
         if ($this->isInvalidDirection()) {
             $messages[] = [
@@ -94,5 +112,13 @@ class ResourceSortErrorBag
     public function isInvalidSortField(): bool
     {
         return $this->invalidSortField;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasInvalidInputTypes(): bool
+    {
+        return ! empty($this->invalidInputTypes);
     }
 }

@@ -9,6 +9,7 @@ class ResourceFilterErrorBag
     public const MISSING_REQUIRED_FILTERING = 'MISSING_REQUIRED_FILTERING';
     public const INVALID_FILTERING = 'INVALID_FILTERING';
     public const INVALID_FILTERING_VALUE = 'INVALID_FILTERING_VALUE';
+    public const INVALID_INPUT_TYPE = 'INVALID_INPUT_TYPE';
     /**
      * Has passed all the tests.
      *
@@ -38,21 +39,31 @@ class ResourceFilterErrorBag
     private array $invalidFilteringValue;
 
     /**
+     * The input type is invalid.
+     *
+     * @var bool
+     */
+    private bool $invalidInputType;
+
+    /**
      * @param bool $passes
      * @param array $missingRequiredFiltering
      * @param array $invalidFiltering
      * @param array $invalidFilteringValue
+     * @param bool $invalidInputType
      */
     public function __construct(
         bool  $passes,
         array $missingRequiredFiltering = [],
         array $invalidFiltering = [],
-        array $invalidFilteringValue = []
+        array $invalidFilteringValue = [],
+        bool $invalidInputType = false
     ) {
         $this->passes = $passes;
         $this->missingRequiredFiltering = $missingRequiredFiltering;
         $this->invalidFiltering = $invalidFiltering;
         $this->invalidFilteringValue = $invalidFilteringValue;
+        $this->invalidInputType = $invalidInputType;
     }
 
     /**
@@ -65,6 +76,7 @@ class ResourceFilterErrorBag
             'missing_required_filtering' => $this->missingRequiredFiltering,
             'invalid_filtering' => $this->invalidFiltering,
             'invalid_filtering_value' => $this->invalidFilteringValue,
+            'invalid_input_type' => $this->invalidInputType,
         ];
     }
 
@@ -78,6 +90,13 @@ class ResourceFilterErrorBag
         }
 
         $messages = [];
+
+        if ($this->isInvalidInputType()) {
+            $messages[] = [
+                'error_code' => static::INVALID_INPUT_TYPE,
+                'error_message' => "The input type is invalid. It must be an array.",
+            ];
+        }
 
         if ($this->hasInvalidFiltering()) {
             $messages[] = [
@@ -178,5 +197,13 @@ class ResourceFilterErrorBag
     public function hasInvalidFilteringValue(): bool
     {
         return ! empty($this->invalidFilteringValue);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInvalidInputType(): bool
+    {
+        return $this->invalidInputType;
     }
 }

@@ -6,6 +6,7 @@ use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\CompoundErrors;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications\FieldSelectorErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers\ResourceFilter;
 use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Handlers\ResourceOffsetPaginator;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers\ResourceSearch;
@@ -39,9 +40,12 @@ class AlchemistAdapter
                 $messages['fields'] = $errors->fieldSelector->getMessages();
 
                 foreach ($messages['fields'] as &$error) {
-                    if ($error['error_code'] === 'UNSELECTABLE_FIELD') {
+                    if ($error['error_code'] === FieldSelectorErrorBag::UNSELECTABLE_FIELD) {
                         $fieldStruct = $this->alchemistRestfulApi->fieldSelector()->getFieldStructure($error['error_namespace'])['sub'];
-                        $error['selectable'] = array_keys($fieldStruct);
+
+                        if ($fieldStruct) {
+                            $error['selectable'] = array_keys($fieldStruct);
+                        }
                     }
                 }
 
@@ -54,6 +58,10 @@ class AlchemistAdapter
 
             if (isset($errors->resourceOffsetPaginator)) {
                 $messages['paginator'] = $errors->resourceOffsetPaginator->getMessages();
+            }
+
+            if (isset($errors->resourceSearch)) {
+                $messages['search'] = $errors->resourceSearch->getMessages();
             }
 
             if (isset($errors->resourceSort)) {

@@ -22,6 +22,11 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\InvalidFilteringVal
 
 class ResourceFilter
 {
+    /**
+     * @var mixed
+     */
+    private $originalInput;
+
     private const MAP_OPERATOR_BETWEEN_FILTER_VS_CONDITION = [
         'eq' => '=',
         'is' => '=',
@@ -39,7 +44,7 @@ class ResourceFilter
         'duplicate' => 'duplicate',
     ];
 
-    private array $filtering;
+    private array $filtering = [];
     private array $filteringRules = [];
     private ?FilteringOptions $filteringOption = null;
     private array $mapFilteringRules = [];
@@ -51,11 +56,15 @@ class ResourceFilter
     private array $filteringMap = [];
 
     /**
-     * @param array $filtering
+     * @param mixed $filtering
      */
-    public function __construct(array $filtering)
+    public function __construct($filtering)
     {
-        $this->filtering = $filtering;
+        $this->originalInput = $filtering;
+
+        if (is_array($filtering)) {
+            $this->filtering = $filtering;
+        }
     }
 
     /**
@@ -201,6 +210,10 @@ class ResourceFilter
      */
     public function validate(&$notification = null): ResourceFilterErrorBag
     {
+        if (! is_null($this->originalInput) && ! is_array($this->originalInput)) {
+            return $notification = new ResourceFilterErrorBag(false, [], [], [], true);
+        }
+
         $optionValidationNotification = $this->validateOption();
 
         if ($optionValidationNotification->passes()) {

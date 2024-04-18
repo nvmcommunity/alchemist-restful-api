@@ -8,6 +8,11 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Object
 class ResourceOffsetPaginator
 {
     /**
+     * @var mixed
+     */
+    private $originalInput;
+
+    /**
      * @var int
      */
     private int $defaultLimit = 0;
@@ -23,15 +28,28 @@ class ResourceOffsetPaginator
      * @var int
      */
     private int $offset;
+    /**
+     * @var string
+     */
+    private string $limitParam;
+    /**
+     * @var string
+     */
+    private string $offsetParam;
 
     /**
-     * @param int $limit
-     * @param int $offset
+     * @param string $limitParam
+     * @param string $offsetParam
+     * @param array $input
      */
-    public function __construct(int $limit, int $offset)
+    public function __construct(string $limitParam, string $offsetParam, array $input)
     {
-        $this->limit = $limit;
-        $this->offset = $offset;
+        $this->limitParam = $limitParam;
+        $this->offsetParam = $offsetParam;
+        $this->originalInput = $input;
+
+        $this->limit = is_int($input[$limitParam]) ? $input[$limitParam] : 0;
+        $this->offset = is_int($input[$offsetParam]) ? $input[$offsetParam] : 0;
     }
 
     /**
@@ -73,6 +91,19 @@ class ResourceOffsetPaginator
         $passes = true;
         $isNegativeOffset = false;
         $maxLimitReached = false;
+        $invalidInputTypes = [];
+
+        if (! is_null($this->originalInput[$this->limitParam]) && ! is_int($this->originalInput[$this->limitParam])) {
+            $invalidInputTypes[] = $this->limitParam;
+        }
+
+        if (! is_null($this->originalInput[$this->offsetParam]) && ! is_int($this->originalInput[$this->offsetParam])) {
+            $invalidInputTypes[] = $this->offsetParam;
+        }
+
+        if (! empty($invalidInputTypes)) {
+            $passes = false;
+        }
 
         if ($this->maxLimit > 0 && $this->maxLimit < $this->limit) {
             $passes = false;
@@ -84,6 +115,6 @@ class ResourceOffsetPaginator
             $isNegativeOffset = true;
         }
 
-        return $notification = new ResourceOffsetPaginationErrorBag($passes, $maxLimitReached, $isNegativeOffset);
+        return $notification = new ResourceOffsetPaginationErrorBag($passes, $maxLimitReached, $isNegativeOffset, $invalidInputTypes);
     }
 }

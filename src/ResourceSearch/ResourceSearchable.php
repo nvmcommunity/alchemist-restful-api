@@ -64,11 +64,7 @@ trait ResourceSearchable
 
         $searchParam = $componentConfig[ResourceSearch::class]['request_params']['search_param'];
 
-        if (isset($requestInput[$searchParam]) && ! is_string($requestInput[$searchParam])) {
-            throw new AlchemistRestfulApiException(sprintf('The `%s` request input parameter must be type of string', $searchParam));
-        }
-
-        $this->resourceSearch = new ResourceSearch($requestInput[$searchParam] ?? '');
+        $this->resourceSearch = new ResourceSearch($requestInput[$searchParam] ?? null);
     }
 
     /**

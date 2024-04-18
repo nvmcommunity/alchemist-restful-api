@@ -8,6 +8,11 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Objects\ResourceSearchObjec
 class ResourceSearch
 {
     /**
+     * @var mixed
+     */
+    private $originalInput;
+
+    /**
      * @var string
      */
     private string $searchValue;
@@ -17,11 +22,13 @@ class ResourceSearch
     private string $searchCondition = '';
 
     /**
-     * @param string $searchValue
+     * @param mixed $searchValue
      */
-    public function __construct(string $searchValue)
+    public function __construct($searchValue)
     {
-        $this->searchValue = $searchValue;
+        $this->originalInput = $searchValue;
+
+        $this->searchValue = is_string($searchValue) ? $searchValue : '';
     }
 
     /**
@@ -41,5 +48,18 @@ class ResourceSearch
     public function search(): ResourceSearchObject
     {
         return new ResourceSearchObject($this->searchValue, $this->searchCondition);
+    }
+
+    /**
+     * @param $notification
+     * @return ResourceSearchErrorBag
+     */
+    public function validate(&$notification = null): ResourceSearchErrorBag
+    {
+        if (! is_null($this->originalInput) && ! is_string($this->originalInput)) {
+            return $notification = new ResourceSearchErrorBag(false, true);
+        }
+
+        return $notification = new ResourceSearchErrorBag(true);
     }
 }

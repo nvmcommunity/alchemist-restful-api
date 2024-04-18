@@ -12,6 +12,10 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Objects\ResourceSortObject;
 class ResourceSort
 {
     /**
+     * @var mixed
+     */
+    private $originalInput;
+    /**
      * @var string
      */
     private string $sortField;
@@ -19,6 +23,14 @@ class ResourceSort
      * @var string
      */
     private string $direction;
+    /**
+     * @var string
+     */
+    private string $sortFieldParam;
+    /**
+     * @var string
+     */
+    private string $directionParam;
     /**
      * @var string[]
      */
@@ -33,13 +45,18 @@ class ResourceSort
     private string $defaultSortDirection = 'asc';
 
     /**
-     * @param string $sort
-     * @param string $direction
+     * @param string $sortParam
+     * @param string $directionParam
+     * @param array $input
      */
-    public function __construct(string $sort, string $direction)
+    public function __construct(string $sortParam, string $directionParam, array $input)
     {
-        $this->sortField = $sort;
-        $this->direction = $direction;
+        $this->sortFieldParam = $sortParam;
+        $this->directionParam = $directionParam;
+        $this->originalInput = $input;
+
+        $this->sortField = is_string($input[$sortParam]) ? $input[$sortParam] : '';
+        $this->direction = is_string($input[$directionParam]) ? $input[$directionParam] : '';
     }
 
     /**
@@ -90,6 +107,19 @@ class ResourceSort
 
         $invalidDirection = false;
         $invalidSortField = false;
+        $invalidInputTypes = [];
+
+        if (! is_null($this->originalInput[$this->sortFieldParam]) && ! is_string($this->originalInput[$this->sortFieldParam])) {
+            $invalidInputTypes[] = $this->sortFieldParam;
+        }
+
+        if (! is_null($this->originalInput[$this->directionParam]) && ! is_string($this->originalInput[$this->directionParam])) {
+            $invalidInputTypes[] = $this->directionParam;
+        }
+
+        if (! empty($invalidInputTypes)) {
+            $passes = false;
+        }
 
         if (! empty($this->direction) && ! in_array($this->direction, ['asc', 'desc'], true)) {
             $passes = false;
@@ -101,7 +131,7 @@ class ResourceSort
             $invalidSortField = true;
         }
 
-        return $notification = new ResourceSortErrorBag($passes, $invalidDirection, $invalidSortField);
+        return $notification = new ResourceSortErrorBag($passes, $invalidDirection, $invalidSortField, $invalidInputTypes);
     }
 
     /**

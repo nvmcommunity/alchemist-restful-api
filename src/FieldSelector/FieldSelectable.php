@@ -67,11 +67,7 @@ trait FieldSelectable
 
         $fieldsParam = $componentConfig[FieldSelector::class]['request_params']['fields_param'];
 
-        if (isset($requestInput[$fieldsParam]) && ! is_string($requestInput[$fieldsParam])) {
-            throw new AlchemistRestfulApiException(printf("The `%s` request input parameter must be type of string", $fieldsParam));
-        }
-
-        $this->fieldSelector = new FieldSelector($requestInput[$fieldsParam] ?? '');
+        $this->fieldSelector = new FieldSelector($requestInput[$fieldsParam] ?? null);
     }
 
     /**

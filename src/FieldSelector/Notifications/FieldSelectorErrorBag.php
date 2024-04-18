@@ -5,6 +5,7 @@ namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications;
 class FieldSelectorErrorBag
 {
     public const UNSELECTABLE_FIELD = 'UNSELECTABLE_FIELD';
+    public const INVALID_INPUT_TYPE = 'INVALID_INPUT_TYPE';
 
     /**
      * Has passed all the tests.
@@ -28,18 +29,28 @@ class FieldSelectorErrorBag
     private string $namespace;
 
     /**
+     * The input type is invalid.
+     *
+     * @var bool
+     */
+    private bool $invalidInputType;
+
+    /**
      * @param bool $passes
      * @param string $namespace
      * @param string[] $unselectableFields
+     * @param bool $invalidInputType
      */
     public function __construct(
         bool $passes,
         string $namespace = '',
-        array $unselectableFields = []
+        array $unselectableFields = [],
+        bool $invalidInputType = false
     ) {
         $this->passes = $passes;
         $this->namespace = $namespace;
         $this->unselectableFields = $unselectableFields;
+        $this->invalidInputType = $invalidInputType;
     }
 
     /**
@@ -51,6 +62,7 @@ class FieldSelectorErrorBag
             'passes' => $this->passes,
             'namespace' => $this->namespace,
             'unselectable_fields' => $this->unselectableFields,
+            'invalid_input_type' => $this->invalidInputType,
         ];
     }
 
@@ -64,6 +76,13 @@ class FieldSelectorErrorBag
         }
 
         $messages = [];
+
+        if ($this->isInvalidInputType()) {
+            $messages[] = [
+                'error_code' => static::INVALID_INPUT_TYPE,
+                'error_message' => "The input type is invalid. It must be a string.",
+            ];
+        }
 
         if ($this->hasUnselectableFields()) {
             $messages[] = [
@@ -107,5 +126,13 @@ class FieldSelectorErrorBag
     public function hasUnselectableFields(): bool
     {
         return ! empty($this->unselectableFields);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInvalidInputType(): bool
+    {
+        return $this->invalidInputType;
     }
 }

@@ -6,6 +6,7 @@ class ResourceOffsetPaginationErrorBag
 {
     public const MAX_LIMIT_REACHED = 'MAX_LIMIT_REACHED';
     public const NEGATIVE_OFFSET = 'NEGATIVE_OFFSET';
+    public const INVALID_INPUT_TYPE = 'INVALID_INPUT_TYPE';
     /**
      * Has passed all the tests.
      *
@@ -26,14 +27,28 @@ class ResourceOffsetPaginationErrorBag
     private bool $negativeOffset;
 
     /**
+     * The input type is invalid.
+     *
+     * @var array
+     */
+    private array $invalidInputTypes;
+
+    /**
      * @param bool $passes
      * @param bool $maxLimitReached
      * @param bool $negativeOffset
+     * @param array $invalidInputTypes
      */
-    public function __construct(bool $passes, bool $maxLimitReached = false, bool $negativeOffset = false) {
+    public function __construct(
+        bool $passes,
+        bool $maxLimitReached = false,
+        bool $negativeOffset = false,
+        array $invalidInputTypes = []
+    ) {
         $this->passes = $passes;
         $this->maxLimitReached = $maxLimitReached;
         $this->negativeOffset = $negativeOffset;
+        $this->invalidInputTypes = $invalidInputTypes;
     }
 
     /**
@@ -45,6 +60,7 @@ class ResourceOffsetPaginationErrorBag
             'passes' => $this->passes,
             'max_limit_reached' => $this->maxLimitReached,
             'negative_offset' => $this->negativeOffset,
+            'invalid_input_parameters' => $this->invalidInputTypes,
         ];
     }
 
@@ -58,6 +74,14 @@ class ResourceOffsetPaginationErrorBag
         }
 
         $messages = [];
+
+        if ($this->hasInvalidInputTypes()) {
+            $messages[] = [
+                'error_code' => static::INVALID_INPUT_TYPE,
+                'error_message' => "The input type is invalid.",
+                'invalid_input_parameters' => $this->invalidInputTypes,
+            ];
+        }
 
         if ($this->isMaxLimitReached()) {
             $messages[] = [
@@ -98,5 +122,13 @@ class ResourceOffsetPaginationErrorBag
     public function isNegativeOffset(): bool
     {
         return $this->negativeOffset;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasInvalidInputTypes(): bool
+    {
+        return count($this->invalidInputTypes) > 0;
     }
 }
