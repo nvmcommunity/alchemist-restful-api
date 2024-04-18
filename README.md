@@ -392,13 +392,13 @@ This table also describes the structure of filtering values for special data typ
 
 | Request Operator | Target Operator    | Meaning                | Value Structure                        |
 |------------------|--------------------|------------------------|----------------------------------------|
-| eq               | \=                 | equal                  | string\<value\>                        |
-| ne               | \!=                | not equal              | string\<value\>                        |
-| lt               | \<                 | lower than             | string\<value\>                        |
-| gt               | \>                 | greater than           | string\<value\>                        |
-| lte              | \<=                | lower than or equal    | string\<value\>                        |
-| gte              | \>=                | greater than or equal  | string\<value\>                        |
-| contains         | contains _(*)_     | contains               | string\<value\>                        |
+| eq               | \=                 | equal                  | \<value\>                              |
+| ne               | \!=                | not equal              | \<value\>                              |
+| lt               | \<                 | lower than             | \<value\>                              |
+| gt               | \>                 | greater than           | \<value\>                              |
+| lte              | \<=                | lower than or equal    | \<value\>                              |
+| gte              | \>=                | greater than or equal  | \<value\>                              |
+| contains         | contains _(*)_     | contains               | \<value\>                              |
 | between          | between _(*)_      | between                | array(\<value[0]\>, \<value[1]\>)      |
 | not_between      | not_between _(*)_  | not between            | array(\<value[0]\>, \<value[1]\>)      |
 | in               | in _(*)_           | in                     | array(\<value[0]\>, \<value[1]\>, ...) |
