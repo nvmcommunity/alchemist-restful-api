@@ -21,6 +21,7 @@ A library that helps you quickly get a rigorous and flexible RESTful-based API i
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+- [Laravel Integration](#laravel-integration)
 - [Basic usage](#basic-usage)
 - [More explanation about each component](#more-explanation-about-each-component)
   - [Field Selector](#field-selector)
@@ -59,6 +60,14 @@ The library provides a set of components that you can use to build your API inte
 
 ```bash
 composer require nvmcommunity/alchemist-restful-api
+```
+
+## Laravel Integration
+
+If you are using Laravel, you can install another package called `laravel-eloquent-api` to integrate Alchemist Restful API with Eloquent ORM in Laravel.
+
+```bash
+composer require nvmcommunity/laravel-eloquent-api
 ```
 
 ## Basic usage
@@ -151,9 +160,9 @@ class OrderApiQuery extends AlchemistQueryable
     }
 }
 ```
-### Step 2: Process the input parameters from the API client
+### Step 2: Validate the input parameters
 
-You need to process the input parameters from the API client and pass them to the `AlchemistRestfulApi` class. The `AlchemistRestfulApi` class will then validate the input parameters and return the validated parameters to you.
+Make sure to validate the input parameters passed in from the request input by using the `validate` method.
 
 ```php
 <?php
@@ -182,14 +191,18 @@ if (! $restfulApi->validate($errorBag)->passes()) {
     
     echo "validate failed"; die();
 }
+```
 
-// And finally, what you will receive here is fields, filtering, offset, search, and sort parameters from the API client.
-// All have been carefully validated.
+### Step 3: Alright, All the input parameters have been carefully validated
 
+And finally, what you will receive here is fields, filtering, offset, search, and sort parameters from the API client.
+All have been carefully validated.
+
+```php
 // Get all string fields that user want to retrieve
 $restfulApi->fieldSelector()->flatFields();
 
-// Get all filtering conditions that user want to filter
+// Get all filtering conditions that client passed in
 $restfulApi->resourceFilter()->filtering();
 
 $offsetPaginate = $restfulApi->resourceOffsetPaginator()->offsetPaginate();
