@@ -34,7 +34,7 @@ class ResourceSearchTest extends TestCase
 
         $this->assertFalse($restfulApi->validate()->passes());
         $this->assertNotNull($restfulApi->validate()->getErrors()['search']);
-        $this->assertNotNull($restfulApi->resourceSearch()->validate()->isInvalidInputType());
+        $this->assertTrue($restfulApi->resourceSearch()->validate()->isInvalidInputType());
     }
 
     /**

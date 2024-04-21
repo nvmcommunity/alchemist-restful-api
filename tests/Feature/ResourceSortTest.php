@@ -33,7 +33,7 @@ class ResourceSortTest extends TestCase
 
         $this->assertFalse($restfulApi->validate()->passes());
         $this->assertNotNull($restfulApi->validate()->getErrors()['sort']);
-        $this->assertNotNull($restfulApi->resourceSort()->validate()->hasInvalidInputTypes());
+        $this->assertTrue($restfulApi->resourceSort()->validate()->hasInvalidInputTypes());
     }
 
     /**
@@ -47,7 +47,7 @@ class ResourceSortTest extends TestCase
 
         $this->assertFalse($restfulApi->validate()->passes());
         $this->assertNotNull($restfulApi->validate()->getErrors()['sort']);
-        $this->assertNotNull($restfulApi->resourceSort()->validate()->hasInvalidInputTypes());
+        $this->assertTrue($restfulApi->resourceSort()->validate()->hasInvalidInputTypes());
     }
 
     /**
@@ -61,7 +61,7 @@ class ResourceSortTest extends TestCase
 
         $this->assertFalse($restfulApi->validate()->passes());
         $this->assertNotNull($restfulApi->validate()->getErrors()['sort']);
-        $this->assertNotNull($restfulApi->resourceSort()->validate()->isInvalidDirection());
+        $this->assertTrue($restfulApi->resourceSort()->validate()->isInvalidDirection());
     }
 
     /**
@@ -75,7 +75,7 @@ class ResourceSortTest extends TestCase
 
         $this->assertFalse($restfulApi->validate()->passes());
         $this->assertNotNull($restfulApi->validate()->getErrors()['sort']);
-        $this->assertNotNull($restfulApi->resourceSort()->validate()->isInvalidSortField());
+        $this->assertTrue($restfulApi->resourceSort()->validate()->isInvalidSortField());
     }
 
     /**
@@ -94,7 +94,7 @@ class ResourceSortTest extends TestCase
 
         $this->assertFalse($restfulApi->validate()->passes());
         $this->assertNotNull($restfulApi->validate()->getErrors()['sort']);
-        $this->assertNotNull($restfulApi->resourceSort()->validate()->isInvalidSortField());
+        $this->assertTrue($restfulApi->resourceSort()->validate()->isInvalidSortField());
     }
 
     /**

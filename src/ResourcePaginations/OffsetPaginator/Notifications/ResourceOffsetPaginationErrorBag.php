@@ -147,7 +147,7 @@ class ResourceOffsetPaginationErrorBag
      */
     public function isNegativeLimit(): bool
     {
-        return $this->negativeOffset;
+        return $this->negativeLimit;
     }
 
     /**
