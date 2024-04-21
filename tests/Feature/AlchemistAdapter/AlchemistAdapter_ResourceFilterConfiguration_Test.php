@@ -5,7 +5,6 @@ namespace Feature\AlchemistAdapter;
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\Adapters\AlchemistAdapter;
-use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers\ResourceFilter;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringRules;
 use PHPUnit\Framework\TestCase;

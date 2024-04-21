@@ -2,7 +2,6 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi;
 
-use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Numerics;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\Adapters\AlchemistAdapter;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\AlchemistQueryable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\CompoundErrors;
@@ -66,65 +65,6 @@ class AlchemistRestfulApi
     }
 
     /**
-     * @param ErrorBag|null $errorBag
-     * @return ErrorBag
-     */
-    public function validate(?ErrorBag &$errorBag = null): ErrorBag
-    {
-        $errors = new CompoundErrors;
-
-        $passes = true;
-
-        if ($this->isComponentUses(FieldSelector::class)) {
-            if (! $this->fieldSelector()->validate($fieldSelectorErrorBag)->passes()) {
-                $passes = false;
-
-                $errors->fieldSelector = $fieldSelectorErrorBag;
-            }
-        }
-
-        if ($this->isComponentUses(ResourceFilter::class)) {
-            if (! $this->resourceFilter()->validate($resourceFilterErrorBag)->passes()) {
-                $passes = false;
-
-                $errors->resourceFilter = $resourceFilterErrorBag;
-            }
-        }
-
-        if ($this->isComponentUses(ResourceOffsetPaginator::class)) {
-            if (! $this->resourceOffsetPaginator()->validate($resourceOffsetPaginatorErrorBag)->passes()) {
-                $passes = false;
-
-                $errors->resourceOffsetPaginator = $resourceOffsetPaginatorErrorBag;
-            }
-        }
-
-        if ($this->isComponentUses(ResourceSearch::class)) {
-            if (! $this->resourceSearch()->validate($resourceSearchErrorBag)->passes()) {
-                $passes = false;
-
-                $errors->resourceSearch = $resourceSearchErrorBag;
-            }
-        }
-
-        if ($this->isComponentUses(ResourceSort::class)) {
-            if (! $this->resourceSort()->validate($resourceSortErrorBag)->passes()) {
-                $passes = false;
-
-                $errors->resourceSort = $resourceSortErrorBag;
-            }
-        }
-
-        $errorBag = new ErrorBag($passes, $errors);
-
-        if (method_exists($this->adapter, 'errorHandler')) {
-            $this->adapter->errorHandler($errorBag);
-        }
-
-        return $errorBag;
-    }
-
-    /**
      * @param string $apiClass
      * @param array $requestInput
      * @param AlchemistAdapter|null $adapter
@@ -137,36 +77,27 @@ class AlchemistRestfulApi
 
         $instance = new self($requestInput, $adapter);
 
-        if ($instance->isModuleEnable(FieldSelectable::class)) {
+        if ($instance->isComponentUses(FieldSelector::class)) {
             $apiClass::fieldSelector($instance->fieldSelector());
         }
 
-        if ($instance->isModuleEnable(ResourceFilterable::class)) {
+        if ($instance->isComponentUses(ResourceFilter::class)) {
             $apiClass::resourceFilter($instance->resourceFilter());
         }
 
-        if ($instance->isModuleEnable(ResourceOffsetPaginate::class)) {
+        if ($instance->isComponentUses(ResourceOffsetPaginator::class)) {
             $apiClass::resourceOffsetPaginator($instance->resourceOffsetPaginator());
         }
 
-        if ($instance->isModuleEnable(ResourceSortable::class)) {
+        if ($instance->isComponentUses(ResourceSort::class)) {
             $apiClass::resourceSort($instance->resourceSort());
         }
 
-        if ($instance->isModuleEnable(ResourceSearchable::class)) {
+        if ($instance->isComponentUses(ResourceSearch::class)) {
             $apiClass::resourceSearch($instance->resourceSearch());
         }
 
         return $instance;
-    }
-
-    /**
-     * @param string $module
-     * @return bool
-     */
-    private function isModuleEnable(string $module): bool
-    {
-        return array_key_exists($module, class_uses($this));
     }
 
     /**
@@ -180,11 +111,87 @@ class AlchemistRestfulApi
     }
 
     /**
+     * @return AlchemistAdapter
+     */
+    public function getAdapter(): AlchemistAdapter
+    {
+        return $this->adapter;
+    }
+
+    /**
+     * @param ErrorBag|null $errorBag
+     * @return ErrorBag
+     */
+    public function validate(?ErrorBag &$errorBag = null): ErrorBag
+    {
+        $errors = new CompoundErrors;
+
+        $passes = true;
+
+        if ($this->isComponentUses(FieldSelector::class)
+            && ! $this->fieldSelector()->validate($fieldSelectorErrorBag)->passes()
+        ) {
+            $passes = false;
+
+            $errors->fieldSelector = $fieldSelectorErrorBag;
+        }
+
+        if ($this->isComponentUses(ResourceFilter::class)
+            && ! $this->resourceFilter()->validate($resourceFilterErrorBag)->passes()
+        ) {
+            $passes = false;
+
+            $errors->resourceFilter = $resourceFilterErrorBag;
+        }
+
+        if ($this->isComponentUses(ResourceOffsetPaginator::class)
+            && ! $this->resourceOffsetPaginator()->validate($resourceOffsetPaginatorErrorBag)->passes()
+        ) {
+            $passes = false;
+
+            $errors->resourceOffsetPaginator = $resourceOffsetPaginatorErrorBag;
+        }
+
+        if ($this->isComponentUses(ResourceSearch::class)
+            && ! $this->resourceSearch()->validate($resourceSearchErrorBag)->passes()
+        ) {
+            $passes = false;
+
+            $errors->resourceSearch = $resourceSearchErrorBag;
+        }
+
+        if ($this->isComponentUses(ResourceSort::class)
+            && ! $this->resourceSort()->validate($resourceSortErrorBag)->passes()
+        ) {
+            $passes = false;
+
+            $errors->resourceSort = $resourceSortErrorBag;
+        }
+
+        $errorBag = new ErrorBag($passes, $errors);
+
+        if (method_exists($this->adapter, 'errorHandler')) {
+            $this->adapter->errorHandler($errorBag);
+        }
+
+        return $errorBag;
+    }
+
+    /**
      * @param string $componentClass
      * @return bool
      */
-    final public function isComponentUses(string $componentClass): bool
+    public function isComponentUses(string $componentClass): bool
     {
         return in_array($componentClass, $this->adapter->componentUses());
+    }
+
+    /**
+     * @param string $componentClass
+     * @return array
+     */
+    public function getComponentRequestParams(string $componentClass): array
+    {
+        return $this->adapter->componentConfigs()[$componentClass]['request_params'] ?? [];
     }
 }

@@ -5,7 +5,6 @@ namespace Feature\AlchemistAdapter;
 use Nvmcommunity\Alchemist\RestfulApi\AlchemistRestfulApi;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\Adapters\AlchemistAdapter;
-use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
 use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Handlers\ResourceOffsetPaginator;
 use PHPUnit\Framework\TestCase;
 

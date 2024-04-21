@@ -90,6 +90,7 @@ class ResourceOffsetPaginator
     {
         $passes = true;
         $isNegativeOffset = false;
+        $isNegativeLimit = false;
         $maxLimitReached = false;
         $invalidInputTypes = [];
 
@@ -115,6 +116,11 @@ class ResourceOffsetPaginator
             $isNegativeOffset = true;
         }
 
-        return $notification = new ResourceOffsetPaginationErrorBag($passes, $maxLimitReached, $isNegativeOffset, $invalidInputTypes);
+        if ($this->limit < 0) {
+            $passes = false;
+            $isNegativeLimit = true;
+        }
+
+        return $notification = new ResourceOffsetPaginationErrorBag($passes, $maxLimitReached, $isNegativeOffset, $isNegativeLimit, $invalidInputTypes);
     }
 }

@@ -6,6 +6,7 @@ class ResourceOffsetPaginationErrorBag
 {
     public const MAX_LIMIT_REACHED = 'MAX_LIMIT_REACHED';
     public const NEGATIVE_OFFSET = 'NEGATIVE_OFFSET';
+    public const NEGATIVE_LIMIT = 'NEGATIVE_LIMIT';
     public const INVALID_INPUT_TYPE = 'INVALID_INPUT_TYPE';
     /**
      * Has passed all the tests.
@@ -25,6 +26,12 @@ class ResourceOffsetPaginationErrorBag
      * @var bool
      */
     private bool $negativeOffset;
+    /**
+     * Limit passed in a negative value.
+     *
+     * @var bool
+     */
+    private bool $negativeLimit;
 
     /**
      * The input type is invalid.
@@ -37,17 +44,20 @@ class ResourceOffsetPaginationErrorBag
      * @param bool $passes
      * @param bool $maxLimitReached
      * @param bool $negativeOffset
+     * @param bool $negativeLimit
      * @param array $invalidInputTypes
      */
     public function __construct(
         bool $passes,
         bool $maxLimitReached = false,
         bool $negativeOffset = false,
+        bool $negativeLimit = false,
         array $invalidInputTypes = []
     ) {
         $this->passes = $passes;
         $this->maxLimitReached = $maxLimitReached;
         $this->negativeOffset = $negativeOffset;
+        $this->negativeLimit = $negativeLimit;
         $this->invalidInputTypes = $invalidInputTypes;
     }
 
@@ -60,6 +70,7 @@ class ResourceOffsetPaginationErrorBag
             'passes' => $this->passes,
             'max_limit_reached' => $this->maxLimitReached,
             'negative_offset' => $this->negativeOffset,
+            'negative_limit' => $this->negativeLimit,
             'invalid_input_parameters' => $this->invalidInputTypes,
         ];
     }
@@ -97,6 +108,13 @@ class ResourceOffsetPaginationErrorBag
             ];
         }
 
+        if ($this->isNegativeLimit()) {
+            $messages[] = [
+                'error_code' => static::NEGATIVE_LIMIT,
+                'error_message' => "You have passed in a negative limit. Limit must be a positive integer.",
+            ];
+        }
+
         return $messages;
     }
 
@@ -120,6 +138,14 @@ class ResourceOffsetPaginationErrorBag
      * @return bool
      */
     public function isNegativeOffset(): bool
+    {
+        return $this->negativeOffset;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNegativeLimit(): bool
     {
         return $this->negativeOffset;
     }
