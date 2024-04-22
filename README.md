@@ -36,7 +36,7 @@ A library that helps you quickly get a rigorous and flexible RESTful-based API i
 - **1.0.0**: Initial release
 - **2.0.0**: Add support for new way to define object and collection field structure
 - **2.0.1**: [Add support for AlchemistAdapter to change parameter name in request input of default components](./docs/changelogs/2_0_1_Add_support_for_Adapter_to_change_parameter_name_in_request_input.md)
-- **2.0.10**: Fix some bugs and add support for default limit in ResourceOffsetPaginator
+- **2.0.11**: Fix some bugs and add more tests
 
 ## Introduction
 
@@ -376,7 +376,7 @@ FilteringRules::Datetime(string $filtering, array $supportedOperators, array $fo
 // `Enum` type is a special type that allows you to define a list of values that your API client can use to filter the data.
 FilteringRules::Enum(string $filtering, array $supportedOperators, array $enums)
 
-// `Boolean` type is a special type that allows you to define a list of values that represent `0` (false) and `1` (true).
+// `Boolean` type is a special type that allows you to define the boolean value that your API client can use to filter the data.
 FilteringRules::Boolean(string $filtering, array $supportedOperators = [])
 ```
 
