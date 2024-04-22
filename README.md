@@ -36,7 +36,7 @@ A library that helps you quickly get a rigorous and flexible RESTful-based API i
 - **1.0.0**: Initial release
 - **2.0.0**: Add support for new way to define object and collection field structure
 - **2.0.1**: [Add support for AlchemistAdapter to change parameter name in request input of default components](./docs/changelogs/2_0_1_Add_support_for_Adapter_to_change_parameter_name_in_request_input.md)
-- **2.0.11**: Fix some bugs and add more tests
+- **2.0.12**: Fix some bugs and add more tests
 
 ## Introduction
 
