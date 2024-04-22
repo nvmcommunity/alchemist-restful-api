@@ -47,7 +47,7 @@ class ResourceOffsetPaginatorTest extends TestCase
 
         $this->assertFalse($restfulApi->validate()->passes());
         $this->assertNotNull($restfulApi->validate()->getErrors()['paginator']);
-        $this->assertNotNull($restfulApi->resourceOffsetPaginator()->validate()->hasInvalidInputTypes());
+        $this->assertTrue($restfulApi->resourceOffsetPaginator()->validate()->hasInvalidInputTypes());
     }
 
     /**
@@ -63,7 +63,7 @@ class ResourceOffsetPaginatorTest extends TestCase
 
         $this->assertFalse($restfulApi->validate()->passes());
         $this->assertNotNull($restfulApi->validate()->getErrors()['paginator']);
-        $this->assertNotNull($restfulApi->resourceOffsetPaginator()->validate()->isMaxLimitReached());
+        $this->assertTrue($restfulApi->resourceOffsetPaginator()->validate()->isMaxLimitReached());
     }
 
     /**
