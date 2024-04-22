@@ -33,6 +33,72 @@ class ResourceFilterTest extends TestCase
         $restfulApi->resourceFilter()->defineFilteringRules([FilteringRules::String('condition', ['eq', 'is', 'ne', 'gte', 'lte', 'gt', 'lt', 'in', 'not_in', 'contains', 'between', 'not_between'])]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => "qwerty",
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => "qwerty",
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => '1',
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => '1',
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => '1',
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => '1',
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => "qwerty",
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => ['1','2','3'],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => ['1','2','3'],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => ['1','2'],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => ['1','2'],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 
     /**
@@ -57,10 +123,78 @@ class ResourceFilterTest extends TestCase
         ]);
 
         $restfulApi->resourceFilter()->defineFilteringRules([FilteringRules::Enum(
-            'condition', ['eq', 'is', 'ne', 'gte', 'lte', 'gt', 'lt', 'in', 'not_in', 'contains', 'between', 'not_between'], ['a', 'b', 'c']
+            'condition',
+            ['eq', 'is', 'ne', 'gte', 'lte', 'gt', 'lt', 'in', 'not_in', 'contains', 'between', 'not_between'],
+            ['a', 'b', 'c']
         )]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => "a",
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => "a",
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => "a",
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => "a",
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => "a",
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => "a",
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => "abc",
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => ['a','b','c'],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => ['a','b','c'],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => ['a','b'],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => ['a','b'],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 
     /**
@@ -89,6 +223,72 @@ class ResourceFilterTest extends TestCase
         )]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => "2024-04-22",
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => "2024-04-22",
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => "2024-04-22",
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => "2024-04-22",
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => "2024-04-22",
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => "2024-04-22",
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => "2024",
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => ['2024-04-22', '2024-04-23', '2024-04-24'],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => ['2024-04-22', '2024-04-23', '2024-04-24'],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => ['2024-04-22', '2024-04-24'],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => ['2024-04-22', '2024-04-24'],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 
     /**
@@ -117,6 +317,72 @@ class ResourceFilterTest extends TestCase
         )]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => "2024-04-22 00:00:00",
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => "2024-04-22 00:00:00",
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => "2024-04-22 00:00:00",
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => "2024-04-22 00:00:00",
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => "2024-04-22 00:00:00",
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => "2024-04-22 00:00:00",
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => "2024",
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => ['2024-04-22 00:00:00', '2024-04-23 00:00:00', '2024-04-24 00:00:00'],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => ['2024-04-22 00:00:00', '2024-04-23 00:00:00', '2024-04-24 00:00:00'],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => ['2024-04-22 00:00:00', '2024-04-24 00:00:00'],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => ['2024-04-22 00:00:00', '2024-04-24 00:00:00'],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 
     /**
@@ -145,6 +411,72 @@ class ResourceFilterTest extends TestCase
         )]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => 1,
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => 1,
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => 1,
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => 1,
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => 1,
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => 1,
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => 2024,
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => [1,2,3],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => [1,2,3],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => [1,3],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => [1,3],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 
     /**
@@ -173,6 +505,72 @@ class ResourceFilterTest extends TestCase
         )]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => -1,
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => -1,
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => -1,
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => -1,
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => -1,
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => -1,
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => -2024,
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => [-1,-2,-3],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => [-1,-2,-3],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => [-1,-3],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => [-1,-3],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 
     /**
@@ -201,6 +599,72 @@ class ResourceFilterTest extends TestCase
         )]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => 1.0,
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => 1.0,
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => 1.0,
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => 1.0,
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => 1.0,
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => 1.0,
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => 2024.0,
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => [1.0,2.0,3.0],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => [1.0,2.0,3.0],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => [1.0,3.0],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => [1.0,3.0],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 
     /**
@@ -210,17 +674,17 @@ class ResourceFilterTest extends TestCase
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
-                'condition:eq' => '-1.0',
-                'condition:ne' => '-1.0',
-                'condition:gte' => '-1.0',
-                'condition:lte' => '-1.0',
-                'condition:gt' => '-1.0',
-                'condition:lt' => '-1.0',
-                'condition:contains' => '-2024.0',
-                'condition:in' => ['-1.0', '-2.0', '-3.0'],
-                'condition:not_in' => ['-1.0', '-2.0', '-3.0'],
-                'condition:between' => ['-1.0', '-3.0'],
-                'condition:not_between' => ['-1.0', '-3.0'],
+                'condition:eq' => -1.0,
+                'condition:ne' => -1.0,
+                'condition:gte' => -1.0,
+                'condition:lte' => -1.0,
+                'condition:gt' => -1.0,
+                'condition:lt' => -1.0,
+                'condition:contains' => -2024.0,
+                'condition:in' => [-1.0,-2.0,-3.0],
+                'condition:not_in' => [-1.0,-2.0,-3.0],
+                'condition:between' => [-1.0,-3.0],
+                'condition:not_between' => [-1.0,-3.0],
             ]
         ]);
 
@@ -229,6 +693,72 @@ class ResourceFilterTest extends TestCase
         )]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => -1.0,
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => -1.0,
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => -1.0,
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => -1.0,
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => -1.0,
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => -1.0,
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => -2024.0,
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => [-1.0,-2.0,-3.0],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => [-1.0,-2.0,-3.0],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => [-1.0,-3.0],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => [-1.0,-3.0],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 
     /**
@@ -257,6 +787,72 @@ class ResourceFilterTest extends TestCase
         )]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => [false, true],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => [false, true],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => [false, true],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => [false, true],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 
     /**
@@ -285,5 +881,71 @@ class ResourceFilterTest extends TestCase
         )]);
 
         $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "=",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[0]->toArray(), 'eq');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "!=",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[1]->toArray(), 'ne');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">=",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[2]->toArray(), 'gte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<=",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[3]->toArray(), 'lte');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => ">",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[4]->toArray(), 'gt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "<",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[5]->toArray(), 'lt');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "contains",
+            "filteringValue" => true,
+        ], $restfulApi->resourceFilter()->filtering()[6]->toArray(), 'contains');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "in",
+            "filteringValue" => [false, true],
+        ], $restfulApi->resourceFilter()->filtering()[7]->toArray(), 'in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_in",
+            "filteringValue" => [false, true],
+        ], $restfulApi->resourceFilter()->filtering()[8]->toArray(), 'not_in');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "between",
+            "filteringValue" => [false, true],
+        ], $restfulApi->resourceFilter()->filtering()[9]->toArray(), 'between');
+
+        $this->assertSame([
+            "filtering" => "condition",
+            "operator" => "not_between",
+            "filteringValue" => [false, true],
+        ], $restfulApi->resourceFilter()->filtering()[10]->toArray(), 'not_between');
     }
 }

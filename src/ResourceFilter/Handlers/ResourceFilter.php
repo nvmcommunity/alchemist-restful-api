@@ -19,6 +19,7 @@ use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringObject;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringOptions;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\FilteringRules;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\InvalidFilteringValue;
+use function _PHPStan_8b6260c21\RingCentral\Psr7\str;
 
 class ResourceFilter
 {
@@ -176,28 +177,83 @@ class ResourceFilter
         foreach ($this->filteringMap as $filteringDotName => $map) {
             $filteringRule = $this->getFilteringRuleByDotName($filteringDotName);
 
+
             foreach ($map as $filteringOperator => $filteringValue) {
+
                 $conditionOperator = $this->getConditionOperatorByFilteringOperator($filteringOperator);
 
                 if ($filteringRule) {
                     switch ($filteringRule->getType()) {
                         case FilteringRules::TYPE_NUMBER:
+                            if ($conditionOperator === 'in'
+                                || $conditionOperator === 'not_in'
+                                || $conditionOperator === 'between'
+                                || $conditionOperator === 'not_between'
+                            ) {
+                                $conditionValue = array_map(static function ($value) {
+                                    return is_numeric($value) ? (float) $value : $value;
+                                }, $filteringValue);
+                                break;
+                            }
+
                             $conditionValue = is_numeric($filteringValue) ? (float) $filteringValue : $filteringValue;
                             break;
                         case FilteringRules::TYPE_INTEGER:
+                            if ($conditionOperator === 'in'
+                                || $conditionOperator === 'not_in'
+                                || $conditionOperator === 'between'
+                                || $conditionOperator === 'not_between'
+                            ) {
+                                $conditionValue = array_map(static function ($value) {
+                                    return filter_var($value, FILTER_VALIDATE_INT) ?: $value;
+                                }, $filteringValue);
+                                break;
+                            }
+
                             $conditionValue = filter_var($filteringValue, FILTER_VALIDATE_INT) ?: $filteringValue;
+                            break;
+                        case FilteringRules::TYPE_BOOLEAN:
+                            if ($conditionOperator === 'in'
+                                || $conditionOperator === 'not_in'
+                                || $conditionOperator === 'between'
+                                || $conditionOperator === 'not_between'
+                            ) {
+                                $conditionValue = array_map(static function ($value) {
+                                    if ($value === 'false') {
+                                        return false;
+                                    }
+
+                                    if ($value === 'true') {
+                                        return true;
+                                    }
+
+                                    return $value;
+                                }, $filteringValue);
+
+                                break;
+                            }
+
+                            if ($filteringValue === 'false') {
+                                $conditionValue = false;
+                                break;
+                            }
+
+                            if ($filteringValue === 'true') {
+                                $conditionValue = true;
+                                break;
+                            }
+
+                            $conditionValue = $filteringValue;
+
                             break;
                         default:
                             $conditionValue = $filteringValue;
                             break;
                     }
+                    // $conditionNameWithOperator = ($conditionOperator !== '=') ? "{$filteringDotName}#{$conditionOperator}" : $filteringDotName;
+                    $conditions[] = new FilteringObject($filteringDotName, $conditionOperator, $conditionValue);
+                    //Arrays::dotSet($conditions, $conditionNameWithOperator, $conditionValue);
                 }
-
-                // $conditionNameWithOperator = ($conditionOperator !== '=') ? "{$filteringDotName}#{$conditionOperator}" : $filteringDotName;
-
-                $conditions[] = new FilteringObject($filteringDotName, $conditionOperator, $filteringValue);
-
-                //Arrays::dotSet($conditions, $conditionNameWithOperator, $conditionValue);
             }
         }
 
@@ -444,13 +500,13 @@ class ResourceFilter
     private function validateFilteringRuleOperator(string $filteringTitle, FilteringRules $filteringRule, string $filteringOperator, $filteringValue, Closure $callbackValidateFilteringType): void
     {
         ([
-            'eq'            => fn() => $this->validateStringValue($filteringTitle, $filteringValue),
-            'ne'            => fn() => $this->validateStringValue($filteringTitle, $filteringValue),
-            'gte'           => fn() => $this->validateStringValue($filteringTitle, $filteringValue),
-            'lte'           => fn() => $this->validateStringValue($filteringTitle, $filteringValue),
-            'gt'            => fn() => $this->validateStringValue($filteringTitle, $filteringValue),
-            'lt'            => fn() => $this->validateStringValue($filteringTitle, $filteringValue),
-            'contains'      => fn() => $this->validateStringValue($filteringTitle, $filteringValue),
+            'eq'            => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
+            'ne'            => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
+            'gte'           => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
+            'lte'           => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
+            'gt'            => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
+            'lt'            => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
+            'contains'      => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
             'in'            => fn() => $this->validateArrayValue($filteringTitle, $filteringValue),
             'not_in'        => fn() => $this->validateArrayValue($filteringTitle, $filteringValue),
             'between'       => fn() => $this->validateBetweenValue($filteringTitle, $filteringValue),
@@ -477,10 +533,23 @@ class ResourceFilter
      * @return void
      * @throws FilteringInvalidValueTypeException
      */
+    private function validateNotStructValue(string $filteringTitle, $filteringValue): void
+    {
+        if ($this->isStructValue($filteringValue)) {
+            throw new FilteringInvalidValueTypeException($filteringTitle, []);
+        }
+    }
+
+    /**
+     * @param string $filteringTitle
+     * @param $filteringValue
+     * @return void
+     * @throws FilteringInvalidValueTypeException
+     */
     private function validateBooleanValue(string $filteringTitle, $filteringValue): void
     {
         if (! $this->isValidBoolValue($filteringValue)) {
-            throw new FilteringInvalidValueTypeException($filteringTitle, [0, 1]);
+            throw new FilteringInvalidValueTypeException($filteringTitle, [true, false]);
         }
     }
 
@@ -771,7 +840,16 @@ class ResourceFilter
      */
     private function isValidStringValue($filteringValue): bool
     {
-        return ! is_array($filteringValue);
+        return is_string($filteringValue);
+    }
+
+    /**
+     * @param $filteringValue
+     * @return bool
+     */
+    private function isStructValue($filteringValue): bool
+    {
+        return is_array($filteringValue);
     }
 
     /**
@@ -780,7 +858,7 @@ class ResourceFilter
      */
     private function isValidBoolValue($value): bool
     {
-        return is_bool($value) || (is_string($value) && in_array((string) $value, ['true', 'false']));
+        return is_bool($value) || in_array($value, ['true', 'false'], true);
     }
 
     /**
