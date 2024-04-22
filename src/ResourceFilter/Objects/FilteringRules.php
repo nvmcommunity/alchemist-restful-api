@@ -6,6 +6,7 @@ class FilteringRules
 {
     public const TYPE_STRING    = 'TYPE_STRING';
     public const TYPE_ENUM      = 'TYPE_ENUM';
+    public const TYPE_BOOLEAN   = 'TYPE_BOOLEAN';
     public const TYPE_DATE      = 'TYPE_DATE';
     public const TYPE_DATETIME  = 'TYPE_DATETIME';
     public const TYPE_INTEGER   = 'TYPE_INTEGER';
@@ -122,7 +123,7 @@ class FilteringRules
      */
     public static function Boolean(string $name, array $extraOperators = []): FilteringRules
     {
-        return new FilteringRules(['type' => self::TYPE_ENUM, 'name' => $name, 'operators' => array_unique(array_merge(['is', 'eq'], $extraOperators)), 'enums' => [0, 1]]);
+        return new FilteringRules(['type' => self::TYPE_BOOLEAN, 'name' => $name, 'operators' => array_unique(array_merge(['is', 'eq'], $extraOperators))]);
     }
 
     /**

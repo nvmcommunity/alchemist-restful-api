@@ -48,7 +48,7 @@ class ResourceFilterTest extends TestCase
                 'condition:lte' => 'a',
                 'condition:gt' => 'a',
                 'condition:lt' => 'a',
-                'condition:contains' => 'a',
+                'condition:contains' => 'abc',
                 'condition:in' => ['a','b','c'],
                 'condition:not_in' => ['a','b','c'],
                 'condition:between' => ['a','b'],
@@ -76,7 +76,7 @@ class ResourceFilterTest extends TestCase
                 'condition:lte' => '2024-04-22',
                 'condition:gt' => '2024-04-22',
                 'condition:lt' => '2024-04-22',
-                //'condition:contains' => '2024',
+                'condition:contains' => '2024',
                 'condition:in' => ['2024-04-22', '2024-04-23', '2024-04-24'],
                 'condition:not_in' => ['2024-04-22', '2024-04-23', '2024-04-24'],
                 'condition:between' => ['2024-04-22', '2024-04-24'],
@@ -104,7 +104,7 @@ class ResourceFilterTest extends TestCase
                 'condition:lte' => '2024-04-22 00:00:00',
                 'condition:gt' => '2024-04-22 00:00:00',
                 'condition:lt' => '2024-04-22 00:00:00',
-                //'condition:contains' => '2024',
+                'condition:contains' => '2024',
                 'condition:in' => ['2024-04-22 00:00:00', '2024-04-23 00:00:00', '2024-04-24 00:00:00'],
                 'condition:not_in' => ['2024-04-22 00:00:00', '2024-04-23 00:00:00', '2024-04-24 00:00:00'],
                 'condition:between' => ['2024-04-22 00:00:00', '2024-04-24 00:00:00'],
@@ -154,17 +154,17 @@ class ResourceFilterTest extends TestCase
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
-                //'condition:eq' => '-1',
-                //'condition:ne' => '-1',
-                //'condition:gte' => '-1',
-                //'condition:lte' => '-1',
-                //'condition:gt' => '-1',
-                //'condition:lt' => '-1',
-                //'condition:contains' => '-2024',
-                //'condition:in' => ['-1', '-2', '-3'],
-                //'condition:not_in' => ['-1', '-2', '-3'],
-                //'condition:between' => ['-1', '-3'],
-                //'condition:not_between' => ['-1', '-3'],
+                'condition:eq' => '-1',
+                'condition:ne' => '-1',
+                'condition:gte' => '-1',
+                'condition:lte' => '-1',
+                'condition:gt' => '-1',
+                'condition:lt' => '-1',
+                'condition:contains' => '-2024',
+                'condition:in' => ['-1', '-2', '-3'],
+                'condition:not_in' => ['-1', '-2', '-3'],
+                'condition:between' => ['-1', '-3'],
+                'condition:not_between' => ['-1', '-3'],
             ]
         ]);
 
@@ -238,17 +238,17 @@ class ResourceFilterTest extends TestCase
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
-                //'condition:eq' => true,
-                //'condition:ne' => true,
-                //'condition:gte' => true,
-                //'condition:lte' => true,
-                //'condition:gt' => true,
-                //'condition:lt' => true,
-                //'condition:contains' => true,
-                //'condition:in' => [false, true],
-                //'condition:not_in' => [false, true],
-                //'condition:between' => [false, true],
-                //'condition:not_between' => [false, true],
+                'condition:eq' => true,
+                'condition:ne' => true,
+                'condition:gte' => true,
+                'condition:lte' => true,
+                'condition:gt' => true,
+                'condition:lt' => true,
+                'condition:contains' => true,
+                'condition:in' => [false, true],
+                'condition:not_in' => [false, true],
+                'condition:between' => [false, true],
+                'condition:not_between' => [false, true],
             ]
         ]);
 
@@ -266,17 +266,17 @@ class ResourceFilterTest extends TestCase
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
-                //'condition:eq' => 'true',
-                //'condition:ne' => 'true',
-                //'condition:gte' => 'true',
-                //'condition:lte' => 'true',
-                //'condition:gt' => 'true',
-                //'condition:lt' => 'true',
-                //'condition:contains' => 'true',
-                //'condition:in' => ['true', 'true', 'true'],
-                //'condition:not_in' => ['true', 'true', 'true'],
-                //'condition:between' => ['true', 'true'],
-                //'condition:not_between' => ['true', 'true'],
+                'condition:eq' => 'true',
+                'condition:ne' => 'true',
+                'condition:gte' => 'true',
+                'condition:lte' => 'true',
+                'condition:gt' => 'true',
+                'condition:lt' => 'true',
+                'condition:contains' => 'true',
+                'condition:in' => ['false', 'true'],
+                'condition:not_in' => ['false', 'true'],
+                'condition:between' => ['false', 'true'],
+                'condition:not_between' => ['false', 'true'],
             ]
         ]);
 

@@ -637,13 +637,47 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use ($filteringRule, &$validate) {
+                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator, &$validate) {
+                    if ($filteringOperator === 'contains') {
+                        if (!$this->isValidStringValue($filteringValue)) {
+                            $validate = new InvalidFilteringValue($filteringTitle, ['string']);
+                        }
+
+                        return;
+                    }
+
                     if (!$this->isValidEnumValue($filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['string', 'int']);
+                        $validate = new InvalidFilteringValue($filteringTitle, ['string']);
                     }
 
                     if (!$filteringRule->hasEnum($filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['string', 'int'], $filteringRule->getEnums());
+                        $validate = new InvalidFilteringValue($filteringTitle, ['string'], $filteringRule->getEnums());
+                    }
+                }
+            );
+        } catch (FilteringInvalidValueTypeException $e) {
+            $validate = new InvalidFilteringValue($filteringTitle, $e->getValidValueTypes());
+        }
+
+        return $validate;
+    }
+
+    /**
+     * @param string $filteringTitle
+     * @param FilteringRules $filteringRule
+     * @param string $filteringOperator
+     * @param $filteringValue
+     * @return InvalidFilteringValue|null
+     */
+    private function validateBooleanTypeValue(string $filteringTitle, FilteringRules $filteringRule, string $filteringOperator, $filteringValue): ?InvalidFilteringValue
+    {
+        $validate = null;
+
+        try {
+            $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
+                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator, &$validate) {
+                    if (!$this->isValidBoolValue($filteringValue)) {
+                        $validate = new InvalidFilteringValue($filteringTitle, ['string'], null, ['true', 'false']);
                     }
                 }
             );
@@ -667,7 +701,15 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use ($filteringRule, &$validate) {
+                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator, &$validate) {
+                    if ($filteringOperator === 'contains') {
+                        if (!$this->isValidStringValue($filteringValue)) {
+                            $validate = new InvalidFilteringValue($filteringTitle, ['string']);
+                        }
+
+                        return;
+                    }
+
                     if (!$this->isValidDateValue($filteringRule, $filteringValue)) {
                         $validate = new InvalidFilteringValue($filteringTitle, ['string'], null, $filteringRule->getFormats());
                     }
@@ -693,7 +735,15 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use ($filteringRule, &$validate) {
+                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator, &$validate) {
+                    if ($filteringOperator === 'contains') {
+                        if (!$this->isValidStringValue($filteringValue)) {
+                            $validate = new InvalidFilteringValue($filteringTitle, ['string']);
+                        }
+
+                        return;
+                    }
+
                     if (!$this->isValidDatetimeValue($filteringRule, $filteringValue)) {
                         $validate = new InvalidFilteringValue($filteringTitle, ['string'], null, $filteringRule->getFormats());
                     }
@@ -730,7 +780,7 @@ class ResourceFilter
      */
     private function isValidBoolValue($value): bool
     {
-        return (is_string($value) || is_int($value)) && in_array((string) $value, ['0', '1']);
+        return is_bool($value) || (is_string($value) && in_array((string) $value, ['true', 'false']));
     }
 
     /**
@@ -748,7 +798,7 @@ class ResourceFilter
      */
     private function isValidIntegerValue($filteringValue): bool
     {
-        return ((is_string($filteringValue) && ctype_digit((string)$filteringValue)) || is_int($filteringValue));
+        return filter_var($filteringValue, FILTER_VALIDATE_INT) !== false;
     }
 
     /**
@@ -819,7 +869,6 @@ class ResourceFilter
             $filteringTitle = $filteringGroupTitle ? "{$filteringGroupTitle}[{$filteringNameWithOperator}]" : $filteringNameWithOperator;
 
             [$filteringName, $filteringOperator] = $this->extractFilteringNameAndOperator($filteringNameWithOperator);
-
             $filteringName = addcslashes($filteringName, '.');
 
             $filteringRule = $filteringRuleGroup ? $filteringRuleGroup->collectItemByName($filteringName) : $this->getFilteringRuleByName($filteringName);
@@ -842,6 +891,7 @@ class ResourceFilter
                 FilteringRules::TYPE_GROUP => fn() => $this->validateGroupTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
                 FilteringRules::TYPE_STRING => fn() => $this->validateStringTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
                 FilteringRules::TYPE_ENUM => fn() => $this->validateEnumTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
+                FilteringRules::TYPE_BOOLEAN => fn() => $this->validateBooleanTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
                 FilteringRules::TYPE_DATE => fn() => $this->validateDateTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
                 FilteringRules::TYPE_DATETIME => fn() => $this->validateDatetimeTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
                 FilteringRules::TYPE_INTEGER => fn() => $this->validateIntegerTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
