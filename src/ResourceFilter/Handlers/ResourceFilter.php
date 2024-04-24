@@ -509,8 +509,8 @@ class ResourceFilter
             'contains'      => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
             'in'            => fn() => $this->validateArrayValue($filteringTitle, $filteringValue),
             'not_in'        => fn() => $this->validateArrayValue($filteringTitle, $filteringValue),
-            'between'       => fn() => $this->validateBetweenValue($filteringTitle, $filteringValue),
-            'not_between'   => fn() => $this->validateBetweenValue($filteringTitle, $filteringValue),
+            'between'       => fn() => $this->validateBetweenValue($filteringOperator, $filteringTitle, $filteringValue),
+            'not_between'   => fn() => $this->validateBetweenValue($filteringOperator, $filteringTitle, $filteringValue),
             'is'            => fn() => $this->validateBooleanValue($filteringTitle, $filteringValue),
             'empty'         => fn() => $this->validateBooleanValue($filteringTitle, $filteringValue),
             'duplicate'     => fn() => $this->validateBooleanValue($filteringTitle, $filteringValue),
@@ -520,10 +520,22 @@ class ResourceFilter
             foreach ($filteringValue as $index => $oneFilteringValue) {
                 $oneFilteringTitle = "{$filteringTitle}[{$index}]";
 
-                $callbackValidateFilteringType($oneFilteringTitle, $oneFilteringValue);
+                /** @var InvalidFilteringValue $invalidFilteringValue */
+                $invalidFilteringValue = $callbackValidateFilteringType($oneFilteringTitle, $oneFilteringValue);
+
+                if (! is_null($invalidFilteringValue)) {
+                    $supportedTypes = array_map(fn($value) => "{$value}[]", $invalidFilteringValue->getSupportedType());
+
+                    throw new FilteringInvalidValueTypeException($filteringTitle, $supportedTypes);
+                }
             }
         } else {
-            $callbackValidateFilteringType($filteringTitle, $filteringValue);
+            /** @var InvalidFilteringValue $invalidFilteringValue */
+            $invalidFilteringValue = $callbackValidateFilteringType($filteringTitle, $filteringValue);
+
+            if (! is_null($invalidFilteringValue)) {
+                throw new FilteringInvalidValueTypeException($filteringTitle, $invalidFilteringValue->getSupportedType());
+            }
         }
     }
 
@@ -554,15 +566,16 @@ class ResourceFilter
     }
 
     /**
+     * @param string $filteringOperator
      * @param string $filteringTitle
      * @param $filteringValue
      * @return void
      * @throws FilteringInvalidValueSyntaxException
      */
-    private function validateBetweenValue(string $filteringTitle, $filteringValue): void
+    private function validateBetweenValue(string $filteringOperator, string $filteringTitle, $filteringValue): void
     {
         if (! $this->isValidBetweenValue($filteringValue)) {
-            throw new FilteringInvalidValueSyntaxException($filteringTitle, 'array of range two value', '[0, 1]');
+            throw new FilteringInvalidValueSyntaxException($filteringOperator, $filteringTitle, 'array(<value[0]>, <value[1]>)', '[0, 1]');
         }
     }
 
@@ -605,14 +618,18 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use (&$validate) {
+                function ($filteringTitle, $filteringValue) {
                     if (!$this->isValidStringValue($filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['string']);
+                        return new InvalidFilteringValue($filteringTitle, ['string']);
                     }
+
+                    return null;
                 }
             );
         } catch (FilteringInvalidValueTypeException $e) {
-            $validate = new InvalidFilteringValue($filteringTitle, $e->getValidValueTypes());
+            $validate = new InvalidFilteringValue($e->getFilteringTitle(), $e->getValidValueTypes());
+        } catch (FilteringInvalidValueSyntaxException $e) {
+            $validate = new InvalidFilteringValue($e->getFilteringTitle(), ['array'], null, [$e->getValidSyntax()]);
         }
 
         return $validate;
@@ -654,14 +671,18 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use (&$validate) {
+                function ($filteringTitle, $filteringValue) {
                     if (!$this->isValidIntegerValue($filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['integer']);
+                        return new InvalidFilteringValue($filteringTitle, ['integer']);
                     }
+
+                    return null;
                 }
             );
         } catch (FilteringInvalidValueTypeException $e) {
             $validate = new InvalidFilteringValue($filteringTitle, $e->getValidValueTypes());
+        } catch (FilteringInvalidValueSyntaxException $e) {
+            $validate = new InvalidFilteringValue($filteringTitle, ['array'], null, [$e->getValidSyntax()]);
         }
 
         return $validate;
@@ -680,14 +701,18 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use (&$validate) {
+                function ($filteringTitle, $filteringValue) {
                     if (!$this->isValidNumberValue($filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['integer', 'float']);
+                        return new InvalidFilteringValue($filteringTitle, ['integer', 'float']);
                     }
+
+                    return null;
                 }
             );
         } catch (FilteringInvalidValueTypeException $e) {
             $validate = new InvalidFilteringValue($filteringTitle, $e->getValidValueTypes());
+        } catch (FilteringInvalidValueSyntaxException $e) {
+            $validate = new InvalidFilteringValue($filteringTitle, ['array'], null, [$e->getValidSyntax()]);
         }
 
         return $validate;
@@ -706,26 +731,30 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator, &$validate) {
+                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator) {
                     if ($filteringOperator === 'contains') {
-                        if (!$this->isValidStringValue($filteringValue)) {
-                            $validate = new InvalidFilteringValue($filteringTitle, ['string']);
+                        if (!$this->isValidEnumValue($filteringValue)) {
+                            return new InvalidFilteringValue($filteringTitle, ['string']);
                         }
 
-                        return;
+                        return null;
                     }
 
                     if (!$this->isValidEnumValue($filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['string']);
+                        return new InvalidFilteringValue($filteringTitle, ['any']);
                     }
 
                     if (!$filteringRule->hasEnum($filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['string'], $filteringRule->getEnums());
+                        return new InvalidFilteringValue($filteringTitle, ['any'], $filteringRule->getEnums());
                     }
+
+                    return null;
                 }
             );
         } catch (FilteringInvalidValueTypeException $e) {
             $validate = new InvalidFilteringValue($filteringTitle, $e->getValidValueTypes());
+        } catch (FilteringInvalidValueSyntaxException $e) {
+            $validate = new InvalidFilteringValue($filteringTitle, ['array'], null, [$e->getValidSyntax()]);
         }
 
         return $validate;
@@ -744,14 +773,18 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator, &$validate) {
+                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator) {
                     if (!$this->isValidBoolValue($filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['string'], null, ['true', 'false']);
+                        return new InvalidFilteringValue($filteringTitle, ['string'], null, ['true', 'false']);
                     }
+
+                    return null;
                 }
             );
         } catch (FilteringInvalidValueTypeException $e) {
             $validate = new InvalidFilteringValue($filteringTitle, $e->getValidValueTypes());
+        } catch (FilteringInvalidValueSyntaxException $e) {
+            $validate = new InvalidFilteringValue($filteringTitle, ['array'], null, [$e->getValidSyntax()]);
         }
 
         return $validate;
@@ -770,22 +803,26 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator, &$validate) {
+                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator) {
                     if ($filteringOperator === 'contains') {
                         if (!$this->isValidStringValue($filteringValue)) {
-                            $validate = new InvalidFilteringValue($filteringTitle, ['string']);
+                            return new InvalidFilteringValue($filteringTitle, ['string']);
                         }
 
-                        return;
+                        return null;
                     }
 
                     if (!$this->isValidDateValue($filteringRule, $filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['string'], null, $filteringRule->getFormats());
+                        return new InvalidFilteringValue($filteringTitle, ['string'], null, $filteringRule->getFormats());
                     }
+
+                    return null;
                 }
             );
         } catch (FilteringInvalidValueTypeException $e) {
             $validate = new InvalidFilteringValue($filteringTitle, $e->getValidValueTypes());
+        } catch (FilteringInvalidValueSyntaxException $e) {
+            $validate = new InvalidFilteringValue($filteringTitle, ['array'], null, [$e->getValidSyntax()]);
         }
 
         return $validate;
@@ -804,22 +841,26 @@ class ResourceFilter
 
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
-                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator, &$validate) {
+                function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator) {
                     if ($filteringOperator === 'contains') {
                         if (!$this->isValidStringValue($filteringValue)) {
-                            $validate = new InvalidFilteringValue($filteringTitle, ['string']);
+                            return new InvalidFilteringValue($filteringTitle, ['string']);
                         }
 
-                        return;
+                        return null;
                     }
 
                     if (!$this->isValidDatetimeValue($filteringRule, $filteringValue)) {
-                        $validate = new InvalidFilteringValue($filteringTitle, ['string'], null, $filteringRule->getFormats());
+                        return new InvalidFilteringValue($filteringTitle, ['string'], null, $filteringRule->getFormats());
                     }
+
+                    return null;
                 }
             );
         } catch (FilteringInvalidValueTypeException $e) {
             $validate = new InvalidFilteringValue($filteringTitle, $e->getValidValueTypes());
+        } catch (FilteringInvalidValueSyntaxException $e) {
+            $validate = new InvalidFilteringValue($filteringTitle, ['array'], null, [$e->getValidSyntax()]);
         }
 
         return $validate;
@@ -876,7 +917,7 @@ class ResourceFilter
      */
     private function isValidIntegerValue($filteringValue): bool
     {
-        return filter_var($filteringValue, FILTER_VALIDATE_INT) !== false;
+        return ! is_bool($filteringValue) && (filter_var($filteringValue, FILTER_VALIDATE_INT) !== false);
     }
 
     /**
@@ -894,7 +935,7 @@ class ResourceFilter
      */
     private function isValidEnumValue($filteringValue): bool
     {
-        return is_string($filteringValue) || is_int($filteringValue);
+        return !is_array($filteringValue);
     }
 
     /**
@@ -904,6 +945,10 @@ class ResourceFilter
      */
     private function isValidDateValue(FilteringRules $filteringRule, $filteringValue): bool
     {
+        if (! is_string($filteringValue)) {
+            return false;
+        }
+
         foreach ($filteringRule->getFormats() as $format) {
             $datetime = date($format, strtotime($filteringValue));
 
@@ -922,6 +967,10 @@ class ResourceFilter
      */
     private function isValidDatetimeValue(FilteringRules $filteringRule, $filteringValue): bool
     {
+        if (! is_string($filteringValue)) {
+            return false;
+        }
+
         foreach ($filteringRule->getFormats() as $format) {
             $datetime = date($format, strtotime($filteringValue));
 
