@@ -14,7 +14,7 @@ class FieldSelectorTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_select_field_in_normal_case_must_pass(): void
+    public function test_FieldSelector_in_NormalCase_must_pass(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => 'id,order_date,product{product_id,product_name,attributes{attribute_id,attribute_name}}'
@@ -34,7 +34,7 @@ class FieldSelectorTest extends TestCase
                 ]),
             ]);
 
-        $this->assertTrue($restfulApi->validate($errorBag)->passes());
+        $this->assertTrue($restfulApi->validate()->passes());
 
         $this->assertIsArray($restfulApi->fieldSelector()->fields());
 
@@ -47,54 +47,26 @@ class FieldSelectorTest extends TestCase
         $this->assertSame(['product_id', 'product_name', 'attributes'], $restfulApi->fieldSelector()->flatFields('$.product'));
 
         $this->assertSame(['attribute_id', 'attribute_name'], $restfulApi->fieldSelector()->flatFields('$.product.attributes'));
-
-        $this->assertTrue($restfulApi->validate($errorBag)->passes());
     }
 
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_select_field_not_in_structure_must_not_pass(): void
+    public function test_FieldSelector_in_NormalCase_WithNullParamValue_must_pass(): void
     {
         $restfulApi = new AlchemistRestfulApi([
-            'fields' => 'not_exist_field'
+            'fields' => null
         ]);
 
-        $restfulApi->fieldSelector()
-            ->defineFieldStructure([
-                'id',
-                'order_date',
-            ]);
+        $this->assertTrue($restfulApi->validate()->passes());
 
-        $this->assertFalse($restfulApi->validate($errorBag)->passes());
+        $this->assertSame([], $restfulApi->fieldSelector()->fields());
     }
 
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_select_nested_field_not_in_structure_must_not_pass(): void
-    {
-        $restfulApi = new AlchemistRestfulApi([
-            'fields' => 'id,order_date,product{id,name,not_exist_field}'
-        ]);
-
-        $restfulApi->fieldSelector()
-            ->defineFieldStructure([
-                'id',
-                'order_date',
-                new ObjectStructure('product', null, [
-                    'id',
-                    'name',
-                ]),
-            ]);
-
-        $this->assertFalse($restfulApi->validate($errorBag)->passes());
-    }
-
-    /**
-     * @throws AlchemistRestfulApiException
-     */
-    public function test_when_fields_parameter_is_empty_then_default_fields_must_be_returned(): void
+    public function test_FieldSelector_when_FieldsParameterIsEmpty_then_DefaultFields_returned(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => ''
@@ -106,36 +78,15 @@ class FieldSelectorTest extends TestCase
                 'id',
             ]);
 
-        $this->assertTrue($restfulApi->validate($errorBag)->passes());
+        $this->assertTrue($restfulApi->validate()->passes());
+
         $this->assertContains('id', $restfulApi->fieldSelector()->flatFields());
     }
 
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_fields_parameter_with_object_field_must_pass(): void
-    {
-        $restfulApi = new AlchemistRestfulApi([
-            'fields' => 'id,product{id,name}'
-        ]);
-
-        $restfulApi->fieldSelector()
-            ->defineDefaultFields(['id'])
-            ->defineFieldStructure([
-                'id',
-                new ObjectStructure('product', null, [
-                    'id',
-                    'name',
-                ]),
-            ]);
-
-        $this->assertTrue($restfulApi->validate($errorBag)->passes());
-    }
-
-    /**
-     * @throws AlchemistRestfulApiException
-     */
-    public function test_when_fields_parameter_with_object_field_and_their_sub_fields_then_corresponding_field_must_be_returned(): void
+    public function test_FieldSelector_in_NormalCase_with_ObjectFieldParameter_must_pass(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => 'product{id,name}'
@@ -151,19 +102,16 @@ class FieldSelectorTest extends TestCase
                 ]),
             ]);
 
-        $this->assertTrue($restfulApi->validate($errorBag)->passes());
-        $this->assertContains('product', $restfulApi->fieldSelector()->flatFields());
+        $this->assertTrue($restfulApi->validate()->passes());
 
-        $productFields = $restfulApi->fieldSelector()->flatFields('$.product');
-
-        $this->assertContains('id', $productFields);
-        $this->assertContains('name', $productFields);
+        $this->assertSame(['product'], $restfulApi->fieldSelector()->flatFields());
+        $this->assertSame(['id', 'name'], $restfulApi->fieldSelector()->flatFields('$.product'));
     }
 
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_fields_parameter_with_object_field_and_empty_sub_fields_then_default_fields_must_be_returned(): void
+    public function test_FieldSelector_when_ObjectFieldWithEmptySubFields_then_DefaultFields_must_be_returned(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => 'product{}'
@@ -178,6 +126,8 @@ class FieldSelectorTest extends TestCase
                 ], ['id']),
             ]);
 
+        $this->assertTrue($restfulApi->validate()->passes());
+
         $this->assertContains('product', $restfulApi->fieldSelector()->flatFields());
 
         $this->assertEquals(['id'], $restfulApi->fieldSelector()->flatFields('$.product'));
@@ -186,7 +136,7 @@ class FieldSelectorTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_when_fields_parameter_with_nested_object_field_and_empty_sub_fields_then_default_fields_must_be_returned(): void
+    public function test_FieldSelector_when_NestedObjectFieldWithEmptySubFields_then_DefaultFields_must_be_returned(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'fields' => 'product{category}'
@@ -205,7 +155,176 @@ class FieldSelectorTest extends TestCase
                 ]),
             ]);
 
+        $this->assertTrue($restfulApi->validate()->passes());
+
         $this->assertContains('product', $restfulApi->fieldSelector()->flatFields());
         $this->assertEquals(['id'], $restfulApi->fieldSelector()->flatFields('$.product.category'));
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_when_SelectNotDefinedField_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => 'not_exist_field'
+        ]);
+
+        $restfulApi->fieldSelector()
+            ->defineFieldStructure([
+                'id',
+                'order_date',
+            ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+
+        $this->assertContains('not_exist_field', $restfulApi->fieldSelector()->validate()->getUnselectableFields());
+
+        $this->assertSame(['not_exist_field'], $restfulApi->fieldSelector()->flatFields());
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_when_SelectNestedFieldNotInStructure_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => 'id,order_date,product{id,name,not_exist_field}'
+        ]);
+
+        $restfulApi->fieldSelector()
+            ->defineFieldStructure([
+                'id',
+                'order_date',
+                new ObjectStructure('product', null, [
+                    'id',
+                    'name',
+                ]),
+            ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+
+        $this->assertSame(['id', 'order_date', 'product'], $restfulApi->fieldSelector()->flatFields());
+        $this->assertSame(['id', 'name', 'not_exist_field'], $restfulApi->fieldSelector()->flatFields('$.product'));
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_WithObjectParamValue_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => new \stdClass()
+        ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+        $this->assertNotNull($restfulApi->validate()->getErrors()['fields']);
+        $this->assertTrue($restfulApi->fieldSelector()->validate()->isInvalidInputType());
+
+        $this->assertSame([], $restfulApi->fieldSelector()->fields());
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_WithArrayParamValue_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => []
+        ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+        $this->assertNotNull($restfulApi->validate()->getErrors()['fields']);
+        $this->assertTrue($restfulApi->fieldSelector()->validate()->isInvalidInputType());
+
+        $this->assertSame([], $restfulApi->fieldSelector()->fields());
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_WithIntegerParamValue_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => 123
+        ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+        $this->assertNotNull($restfulApi->validate()->getErrors()['fields']);
+        $this->assertTrue($restfulApi->fieldSelector()->validate()->isInvalidInputType());
+
+        $this->assertSame([], $restfulApi->fieldSelector()->fields());
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_WithNumericParamValue_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => 123.1
+        ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+        $this->assertNotNull($restfulApi->validate()->getErrors()['fields']);
+        $this->assertTrue($restfulApi->fieldSelector()->validate()->isInvalidInputType());
+
+        $this->assertSame([], $restfulApi->fieldSelector()->fields());
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_WithTrueBooleanParamValue_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => true
+        ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+        $this->assertNotNull($restfulApi->validate()->getErrors()['fields']);
+        $this->assertTrue($restfulApi->fieldSelector()->validate()->isInvalidInputType());
+
+        $this->assertSame([], $restfulApi->fieldSelector()->fields());
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_WithFalseBooleanParamValue_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => false
+        ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+        $this->assertNotNull($restfulApi->validate()->getErrors()['fields']);
+        $this->assertTrue($restfulApi->fieldSelector()->validate()->isInvalidInputType());
+
+        $this->assertSame([], $restfulApi->fieldSelector()->fields());
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_when_SelectSubFieldsOnAtomicFields_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => 'id{category}'
+        ]);
+
+        $restfulApi->fieldSelector()
+            ->defineFieldStructure([
+                'id',
+            ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+        $this->assertNotNull($restfulApi->validate()->getErrors()['fields']);
+        $this->assertTrue($restfulApi->fieldSelector()->validate()->hasUnselectableFields());
+
+        $this->assertSame(['id'], $restfulApi->fieldSelector()->flatFields());
+
+        //$this->expectException(AlchemistRestfulApiException::class);
+        //$restfulApi->fieldSelector()->flatFields('$.id');
     }
 }

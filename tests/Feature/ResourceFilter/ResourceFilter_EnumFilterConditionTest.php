@@ -109,7 +109,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_EqOperator_but_ValueIsNotValidEnum_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_EqOperator_but_ValueIsNotValidEnum_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -137,6 +137,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:eq', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:eq', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:eq', $invalidFilteringValues);
@@ -148,7 +150,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_NeOperator_but_ValueIsNotValidEnum_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_NeOperator_but_ValueIsNotValidEnum_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -176,6 +178,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:ne', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:ne', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:ne', $invalidFilteringValues);
@@ -187,7 +191,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_GteOperator_but_ValueIsNotValidEnum_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_GteOperator_but_ValueIsNotValidEnum_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -215,6 +219,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:gte', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:gte', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:gte', $invalidFilteringValues);
@@ -226,7 +232,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_LteOperator_but_ValueIsNotValidEnum_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_LteOperator_but_ValueIsNotValidEnum_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -254,6 +260,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:lte', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:lte', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:lte', $invalidFilteringValues);
@@ -265,7 +273,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_GtOperator_but_ValueIsNotValidEnum_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_GtOperator_but_ValueIsNotValidEnum_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -293,6 +301,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:gt', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:gt', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:gt', $invalidFilteringValues);
@@ -304,7 +314,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_LtOperator_but_ValueIsNotValidEnum_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_LtOperator_but_ValueIsNotValidEnum_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -332,6 +342,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:lt', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:lt', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:lt', $invalidFilteringValues);
@@ -343,7 +355,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_ContainsOperator_but_ValueIsNotValidEnum_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_ContainsOperator_but_ValueIsNotValidEnum_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -361,13 +373,15 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:contains', $invalidFilteringValues);
     }
 
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_InOperator_but_ValueIsNotAnArray_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_InOperator_but_ValueIsNotAnArray_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -410,6 +424,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:in', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:in', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:in', $invalidFilteringValues);
@@ -428,7 +444,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_NotInOperator_but_ValueIsNotAnArray_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_NotInOperator_but_ValueIsNotAnArray_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -471,6 +487,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:not_in', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:not_in', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:not_in', $invalidFilteringValues);
@@ -489,7 +507,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_BetweenOperator_but_ValueIsNotAnArray_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_BetweenOperator_but_ValueIsNotAnArray_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -533,6 +551,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:between', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:between', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:between', $invalidFilteringValues);
@@ -552,7 +572,7 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
-    public function test_ResourceFilter_EnumCondition_with_NotBetweenOperator_but_ValueIsNotAnArray_must_False_invalidation(): void
+    public function test_ResourceFilter_EnumCondition_with_NotBetweenOperator_but_ValueIsNotAnArray_must_False_validation(): void
     {
         $restfulApi = new AlchemistRestfulApi([
             'filtering' => [
@@ -595,6 +615,8 @@ class ResourceFilter_EnumFilterConditionTest extends TestCase
 
             return $carry;
         }, []);
+
+        $this->assertFalse($restfulApi->validate()->passes());
 
         $this->assertArrayHasKey('condition1:not_between', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:not_between', $invalidFilteringValues);

@@ -205,12 +205,14 @@ class ResourceFilter
                                 || $conditionOperator === 'not_between'
                             ) {
                                 $conditionValue = array_map(static function ($value) {
-                                    return filter_var($value, FILTER_VALIDATE_INT) ?: $value;
+                                    return (! is_bool($value) && filter_var($value, FILTER_VALIDATE_INT) !== false)
+                                        ? filter_var($value, FILTER_VALIDATE_INT) : $value;
                                 }, $filteringValue);
                                 break;
                             }
 
-                            $conditionValue = filter_var($filteringValue, FILTER_VALIDATE_INT) ?: $filteringValue;
+                            $conditionValue = (! is_bool($filteringValue) && filter_var($filteringValue, FILTER_VALIDATE_INT) !== false)
+                                ? filter_var($filteringValue, FILTER_VALIDATE_INT) : $filteringValue;
                             break;
                         case FilteringRules::TYPE_BOOLEAN:
                             if ($conditionOperator === 'in'

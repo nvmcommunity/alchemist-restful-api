@@ -226,6 +226,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:eq', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:eq', $invalidFilteringValues);
         $this->assertArrayHasKey('condition4:eq', $invalidFilteringValues);
@@ -259,6 +261,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
 
             return $carry;
         }, []);
+
+        $this->assertFalse($restfulApi->validate()->passes());
 
         $this->assertArrayHasKey('condition1:ne', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:ne', $invalidFilteringValues);
@@ -294,6 +298,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:gte', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:gte', $invalidFilteringValues);
         $this->assertArrayHasKey('condition4:gte', $invalidFilteringValues);
@@ -327,6 +333,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
 
             return $carry;
         }, []);
+
+        $this->assertFalse($restfulApi->validate()->passes());
 
         $this->assertArrayHasKey('condition1:lte', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:lte', $invalidFilteringValues);
@@ -362,6 +370,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:gt', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:gt', $invalidFilteringValues);
         $this->assertArrayHasKey('condition4:gt', $invalidFilteringValues);
@@ -396,6 +406,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:lt', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:lt', $invalidFilteringValues);
         $this->assertArrayHasKey('condition4:lt', $invalidFilteringValues);
@@ -429,6 +441,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
 
             return $carry;
         }, []);
+
+        $this->assertFalse($restfulApi->validate()->passes());
 
         $this->assertArrayHasKey('condition1:contains', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:contains', $invalidFilteringValues);
@@ -471,6 +485,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
 
             return $carry;
         }, []);
+
+        $this->assertFalse($restfulApi->validate()->passes());
 
         $this->assertArrayHasKey('condition1:in', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:in', $invalidFilteringValues);
@@ -519,6 +535,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
 
             return $carry;
         }, []);
+
+        $this->assertFalse($restfulApi->validate()->passes());
 
         $this->assertArrayHasKey('condition1:not_in', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:not_in', $invalidFilteringValues);
@@ -571,6 +589,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
             return $carry;
         }, []);
 
+        $this->assertFalse($restfulApi->validate()->passes());
+
         $this->assertArrayHasKey('condition1:between', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:between', $invalidFilteringValues);
         $this->assertArrayHasKey('condition3:between', $invalidFilteringValues);
@@ -622,6 +642,8 @@ class ResourceFilter_NumberFilterConditionTest extends TestCase
 
             return $carry;
         }, []);
+
+        $this->assertFalse($restfulApi->validate()->passes());
 
         $this->assertArrayHasKey('condition1:not_between', $invalidFilteringValues);
         $this->assertArrayHasKey('condition2:not_between', $invalidFilteringValues);
