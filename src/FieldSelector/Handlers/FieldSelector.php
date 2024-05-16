@@ -88,10 +88,11 @@ class FieldSelector
     private function parseSelectable(array $selectableFields): array
     {
         $res = [];
-        $substitute = null;
-        $defaultFields = [];
 
         foreach ($selectableFields as $selectableFieldKey => $selectableFieldValue) {
+            $substitute = null;
+            $defaultFields = [];
+
             if ($selectableFieldValue instanceof ObjectStructure) {
                 $fieldName = $selectableFieldValue->getName();
                 $defaultFields = $selectableFieldValue->getDefaultFields();
