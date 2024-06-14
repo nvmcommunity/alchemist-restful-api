@@ -65,36 +65,44 @@ class AlchemistRestfulApi
     }
 
     /**
-     * @param string $apiClass
+     * @param $apiClass
      * @param array $requestInput
      * @param AlchemistAdapter|null $adapter
      * @return AlchemistRestfulApi
      * @throws AlchemistRestfulApiException
      */
-    public static function for(string $apiClass, array $requestInput, ?AlchemistAdapter $adapter = null): self
+    public static function for($apiClass, array $requestInput, ?AlchemistAdapter $adapter = null): self
     {
         /** @var AlchemistQueryable $apiClass */
+
+        if (! is_object($apiClass)) {
+            $apiClass = new $apiClass;
+        }
+
+        if ($adapter !== null) {
+            $adapter = $apiClass->getAdapter();
+        }
 
         $instance = new self($requestInput, $adapter);
 
         if ($instance->isComponentUses(FieldSelector::class)) {
-            $apiClass::fieldSelector($instance->fieldSelector());
+            $apiClass->fieldSelector($instance->fieldSelector());
         }
 
         if ($instance->isComponentUses(ResourceFilter::class)) {
-            $apiClass::resourceFilter($instance->resourceFilter());
+            $apiClass->resourceFilter($instance->resourceFilter());
         }
 
         if ($instance->isComponentUses(ResourceOffsetPaginator::class)) {
-            $apiClass::resourceOffsetPaginator($instance->resourceOffsetPaginator());
+            $apiClass->resourceOffsetPaginator($instance->resourceOffsetPaginator());
         }
 
         if ($instance->isComponentUses(ResourceSort::class)) {
-            $apiClass::resourceSort($instance->resourceSort());
+            $apiClass->resourceSort($instance->resourceSort());
         }
 
         if ($instance->isComponentUses(ResourceSearch::class)) {
-            $apiClass::resourceSearch($instance->resourceSearch());
+            $apiClass->resourceSearch($instance->resourceSearch());
         }
 
         return $instance;
