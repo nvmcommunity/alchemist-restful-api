@@ -15,7 +15,7 @@ A library that helps you quickly get a rigorous and flexible RESTful-based API i
 
 ## Testing
 
-This package is production-ready with 192 tests and 1148 assertions
+This package is production-ready with 193 tests and 1151 assertions
 
 ```bash
 ./vendor/phpunit/phpunit/phpunit
@@ -46,6 +46,7 @@ This package is production-ready with 192 tests and 1148 assertions
 - **2.0.1**: [Add support for AlchemistAdapter to change parameter name in request input of default components](./docs/changelogs/2_0_1_Add_support_for_Adapter_to_change_parameter_name_in_request_input.md)
 - **2.0.16**: (2024-04-28) Add more tests & fix unexpected behaviors
 - **2.0.17**: (2024-06-14) Fix the incorrect pattern in the field parser
+- **2.0.19**: (2024-06-14) Field parsing syntax supports spaces
 
 ## Introduction
 

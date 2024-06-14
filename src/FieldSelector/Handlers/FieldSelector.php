@@ -408,7 +408,7 @@ class FieldSelector
                 $nestedFields = null;
             }
 
-            $field          = trim($fieldWithOptions['field']);
+            $field          = $fieldWithOptions['field'];
             $limit          = isset($fieldWithOptions['options']['limit']) ? (int)$fieldWithOptions['options']['limit'] : null;
 
             if (! isset($result[$field])) {
@@ -465,7 +465,7 @@ class FieldSelector
 
         foreach ($matches as $match) {
             if (empty($fieldName)) {
-                $fieldName = $match[0];
+                $fieldName = trim($match[0]);
             } else {
                 $res = $this->parseFieldOneOption($match[0]);
                 $options[$res[0]] = $res[1];
