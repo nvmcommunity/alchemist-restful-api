@@ -4,6 +4,7 @@ namespace Nvmcommunity\Alchemist\RestfulApi;
 
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\Adapters\AlchemistAdapter;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\AlchemistQueryable;
+use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\StatefulAlchemistQueryable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\CompoundErrors;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
@@ -73,7 +74,7 @@ class AlchemistRestfulApi
      */
     public static function for($apiClass, array $requestInput, ?AlchemistAdapter $adapter = null): self
     {
-        /** @var AlchemistQueryable $apiClass */
+        /** @var AlchemistQueryable|StatefulAlchemistQueryable $apiClass */
 
         if (! is_object($apiClass)) {
             $apiClass = new $apiClass;
