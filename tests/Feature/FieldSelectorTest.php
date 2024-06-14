@@ -111,6 +111,31 @@ class FieldSelectorTest extends TestCase
     /**
      * @throws AlchemistRestfulApiException
      */
+    public function test_FieldSelector_when_SelectFieldHasSpace_must_pass(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => 'id, order_date, product{id, name}'
+        ]);
+
+        $restfulApi->fieldSelector()
+            ->defineFieldStructure([
+                'id',
+                'order_date',
+                new ObjectStructure('product', null, [
+                    'id',
+                    'name',
+                ]),
+            ]);
+
+        $this->assertTrue($restfulApi->validate()->passes());
+
+        $this->assertSame(['id', 'order_date', 'product'], $restfulApi->fieldSelector()->flatFields());
+        $this->assertSame(['id', 'name'], $restfulApi->fieldSelector()->flatFields('$.product'));
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
     public function test_FieldSelector_when_ObjectFieldWithEmptySubFields_then_DefaultFields_must_be_returned(): void
     {
         $restfulApi = new AlchemistRestfulApi([

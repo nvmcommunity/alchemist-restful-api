@@ -408,7 +408,7 @@ class FieldSelector
                 $nestedFields = null;
             }
 
-            $field          = $fieldWithOptions['field'];
+            $field          = trim($fieldWithOptions['field']);
             $limit          = isset($fieldWithOptions['options']['limit']) ? (int)$fieldWithOptions['options']['limit'] : null;
 
             if (! isset($result[$field])) {
