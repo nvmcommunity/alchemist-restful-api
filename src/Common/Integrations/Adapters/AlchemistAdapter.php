@@ -41,10 +41,10 @@ class AlchemistAdapter
 
                 foreach ($messages['fields'] as &$error) {
                     if ($error['error_code'] === FieldSelectorErrorBag::UNSELECTABLE_FIELD) {
-                        $fieldStruct = $this->alchemistRestfulApi->fieldSelector()->getFieldStructure($error['error_namespace'])['sub'];
+                        $fieldStruct = $this->alchemistRestfulApi->fieldSelector()->getFieldStructure($error['error_namespace']);
 
                         if ($fieldStruct) {
-                            $error['selectable'] = array_keys($fieldStruct);
+                            $error['selectable'] = array_keys($fieldStruct['sub']);
                         }
                     }
                 }
