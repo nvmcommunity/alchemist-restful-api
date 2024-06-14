@@ -391,14 +391,25 @@ class FieldSelector
 
         $fields = str_replace('{}', '', $fields);
 
-        $regex = '/([\w\s]+)(?:\.limit\((\d+)\))?(?:\{(.+?)\})?(?:,|$)/';
+        if (empty($fields)) {
+            return [];
+        }
+
+        $regex = '/(?:([^,{}\n]*)\{(?:[^{}\n]*(?R)?)*\}[^,{}\n]*)+|(?<=,|^)[^,{}\n]*/';
 
         preg_match_all($regex, $fields, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            $field          = trim($match[1]);
-            $limit          = isset($match[2]) ? intval($match[2]) : null;
-            $nestedFields   = $match[3] ?? null;
+            if (isset($match[1])) {
+                $fieldWithOptions = $this->parseFieldOptions($match[1]);
+                $nestedFields = $this->removeBraces($this->removePrefix($match[0], $match[1]));
+            } else {
+                $fieldWithOptions = $this->parseFieldOptions($match[0]);
+                $nestedFields = null;
+            }
+
+            $field          = $fieldWithOptions['field'];
+            $limit          = isset($fieldWithOptions['options']['limit']) ? (int)$fieldWithOptions['options']['limit'] : null;
 
             if (! isset($result[$field])) {
                 $result[$field] = new FieldObject($field, $limit ?? 0, $nestedFields ? $this->parseFields($nestedFields) : []);
@@ -406,6 +417,78 @@ class FieldSelector
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $string
+     * @param string $prefix
+     * @return string
+     */
+    private function removePrefix(string $string, string $prefix): string
+    {
+        if (substr($string, 0, strlen($prefix)) === $prefix) {
+            $string = substr($string, strlen($prefix));
+        }
+
+        return $string;
+    }
+
+    /**
+     * @param string $string
+     * @return string
+     */
+    private function removeBraces(string $string): string
+    {
+        if ($string[0] === '{') {
+            $string = substr($string, 1);
+        }
+
+        if (substr($string, -1) === '}') {
+            $string = substr($string, 0, -1);
+        }
+
+        return $string;
+    }
+
+    /**
+     * @param string $fieldWithOptions
+     * @return array
+     */
+    private function parseFieldOptions(string $fieldWithOptions): array
+    {
+        $regex = '/(?:[^.()\n]*\((?:[^()\n]*(?R)?)*\)[^.()\n]*)+|(?<=,|^)[^.()\n]*/';
+
+        preg_match_all($regex, $fieldWithOptions, $matches, PREG_SET_ORDER);
+
+        $fieldName = '';
+        $options = [];
+
+        foreach ($matches as $match) {
+            if (empty($fieldName)) {
+                $fieldName = $match[0];
+            } else {
+                $res = $this->parseFieldOneOption($match[0]);
+                $options[$res[0]] = $res[1];
+            }
+        }
+
+        return [
+            'field' => $fieldName,
+            'options' => $options
+        ];
+    }
+
+    /**
+     * @param string $fieldWithOptions
+     * @return array
+     */
+    private function parseFieldOneOption(string $fieldWithOptions): array
+    {
+        $regex = '/(?:([^.(),\n]+))\((\d+)\)/';
+
+        preg_match($regex, $fieldWithOptions, $match);
+
+        return [$match[1], $match[2]];
     }
 
     /**
