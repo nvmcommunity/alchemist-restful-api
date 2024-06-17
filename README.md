@@ -47,7 +47,7 @@ This package is production-ready with 193 tests and 1151 assertions
 - **2.0.16**: (2024-04-28) Add more tests & fix unexpected behaviors
 - **2.0.17**: (2024-06-14) Fix the incorrect pattern in the field parser
 - **2.0.19**: (2024-06-14) Field parsing syntax supports spaces
-- **2.0.20**: (2024-06-14) Add an additional non-static version of the API class: StatefulAlchemistQueryable
+- **2.0.20**: (2024-06-14) Add a non-static version of the API class: StatefulAlchemistQueryable
 
 ## Introduction
 
@@ -57,7 +57,6 @@ The library provides a set of components that you can use to build your API inte
 
 - **Field Selector**: Allows your API client to select the fields they want to retrieve, ensuring that all retrieved fields are within your control.
 - **Resource Filtering**: Focuses on checking whether the filtering that your API client is using is in the defined filterable list or not.
-- **Resource Pagination**: Support pagination through the offset and limit mechanism.
 - **Resource Sort**: Support for flexible result returns with data sorted based on the sort and direction specified by the API client.
 - **Resource Search**: When filtering through filter, the API client needs to clearly specify the filtering criteria. However, in the case of searching, the API client only needs to pass in the value to be searched for, and the backend will automatically define the filtering criteria from within.
 - **Resource Offset Paginator**: Support pagination through the offset and limit mechanism.
@@ -415,7 +414,7 @@ This table also describes the structure of filtering values for special data typ
 | in               | in _(*)_           | in                     | array(\<value[0]\>, \<value[1]\>, ...) |
 | not_in           | not_in _(*)_       | not in                 | array(\<value[0]\>, \<value[1]\>, ...) |
 
-_(*) Be careful with these operators, because they are not native operators in any database, you need to handle them manually._
+_(*) Be careful with these operators because they are not native operators in any database management system; you need to handle them manually._
 
 ### Resource Pagination
 
@@ -508,6 +507,20 @@ $search = $resourceSearch->search();
 // Combine with the use of an ORM/Query Builder
 ExampleOrderQueryBuilder::where($search->getSearchCondition(), 'like', "%{$search->getSearchValue()}%");
 ```
+
+## Contributing
+
+Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [Contribute](CONTRIBUTING.md).
+
+<a href="https://github.com/nvmcommunity/alchemist-restful-api/graphs/contributors">
+<img src = "https://contrib.rocks/image?repo=nvmcommunity/alchemist-restful-api"/>
+</a>
 
 ## License
 
