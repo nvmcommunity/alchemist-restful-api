@@ -28,7 +28,6 @@ library
 │   │   ├── Notifications (2.2)
 │   │   │   ├── <Class> ModuleA[ErrorBag].php (2.2.1)
 │   │   ├── Objects (2.3)
-│   │   │   ├── <Class> ModuleObject.php (2.3.1)
 │   │   ├── <Trait> ModuleA[able].php (2.4)
 │   ├── ModuleB
 │   │   ├── ...
@@ -82,3 +81,22 @@ library
   - Used for error handling in the library.
 - **1.4.2. CompoundErrors.php**
   - Used for containing multiple errors of all components.
+
+### 2. ModuleA
+
+- **2.1. Handlers**
+  - **2.1.1. ModuleA.php**
+    - Main classes for handling ModuleA.
+- **2.2. Notifications**
+  - **2.2.1. ModuleA[ErrorBag].php**
+      - ErrorBag class for ModuleA.
+      - Contains error messages for ModuleA.
+- **2.3. Objects**
+    - This folder contains objects for ModuleA.
+- **2.4. ModuleA[able].php**
+  - An entry point for ModuleA.
+  - Contains methods for init ModuleA.
+  - Contains access method for ModuleA Handlers.
+
+### 3. AlchemistRestfulApi.php
+- Main class for the library.
