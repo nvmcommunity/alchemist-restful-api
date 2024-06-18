@@ -2,7 +2,9 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Notifications;
 
-class ResourceSearchErrorBag
+use Nvmcommunity\Alchemist\RestfulApi\Common\Objects\BaseAlchemistErrorBag;
+
+class ResourceSearchErrorBag extends BaseAlchemistErrorBag
 {
     public const INVALID_INPUT_TYPE = 'INVALID_INPUT_TYPE';
 
@@ -49,11 +51,11 @@ class ResourceSearchErrorBag
     }
 
     /**
-     * @return bool
+     * @return string
      */
-    public function isInvalidInputType(): bool
+    public function errorKey(): string
     {
-        return $this->invalidInputType;
+        return 'search';
     }
 
     /**
@@ -75,5 +77,13 @@ class ResourceSearchErrorBag
         }
 
         return $messages;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInvalidInputType(): bool
+    {
+        return $this->invalidInputType;
     }
 }

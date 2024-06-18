@@ -2,9 +2,10 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Notifications;
 
+use Nvmcommunity\Alchemist\RestfulApi\Common\Objects\BaseAlchemistErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Objects\InvalidFilteringValue;
 
-class ResourceFilterErrorBag
+class ResourceFilterErrorBag extends BaseAlchemistErrorBag
 {
     public const MISSING_REQUIRED_FILTERING = 'MISSING_REQUIRED_FILTERING';
     public const INVALID_FILTERING = 'INVALID_FILTERING';
@@ -81,6 +82,22 @@ class ResourceFilterErrorBag
     }
 
     /**
+     * @return bool
+     */
+    public function passes(): bool
+    {
+        return $this->passes;
+    }
+
+    /**
+     * @return string
+     */
+    public function errorKey(): string
+    {
+        return 'filtering';
+    }
+
+    /**
      * @return array
      */
     public function getMessages(): array
@@ -141,14 +158,6 @@ class ResourceFilterErrorBag
         }
 
         return $messages;
-    }
-
-    /**
-     * @return bool
-     */
-    public function passes(): bool
-    {
-        return $this->passes;
     }
 
     /**

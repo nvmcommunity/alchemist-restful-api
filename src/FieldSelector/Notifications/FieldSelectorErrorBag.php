@@ -2,7 +2,9 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications;
 
-class FieldSelectorErrorBag
+use Nvmcommunity\Alchemist\RestfulApi\Common\Objects\BaseAlchemistErrorBag;
+
+class FieldSelectorErrorBag extends BaseAlchemistErrorBag
 {
     public const UNSELECTABLE_FIELD = 'UNSELECTABLE_FIELD';
     public const INVALID_INPUT_TYPE = 'INVALID_INPUT_TYPE';
@@ -67,6 +69,22 @@ class FieldSelectorErrorBag
     }
 
     /**
+     * @return bool
+     */
+    public function passes(): bool
+    {
+        return $this->passes;
+    }
+
+    /**
+     * @return string
+     */
+    public function errorKey(): string
+    {
+        return 'fields';
+    }
+
+    /**
      * @return array
      */
     public function getMessages(): array
@@ -94,14 +112,6 @@ class FieldSelectorErrorBag
         }
 
         return $messages;
-    }
-
-    /**
-     * @return bool
-     */
-    public function passes(): bool
-    {
-        return $this->passes;
     }
 
     /**

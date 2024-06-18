@@ -2,21 +2,18 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi;
 
+use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Strings;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\Adapters\AlchemistAdapter;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\AlchemistQueryable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\StatefulAlchemistQueryable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\CompoundErrors;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ErrorBag;
-use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
-use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers\ResourceFilter;
+use Nvmcommunity\Alchemist\RestfulApi\Common\Objects\BaseAlchemistComponent;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\ResourceFilterable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\FieldSelectable;
-use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Handlers\ResourceOffsetPaginator;
 use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\ResourceOffsetPaginate;
-use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers\ResourceSearch;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\ResourceSearchable;
-use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Handlers\ResourceSort;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\ResourceSortable;
 use Nvmcommunity\Alchemist\RestfulApi\Response\Compose\ResourceResponsible;
 
@@ -42,24 +39,8 @@ class AlchemistRestfulApi
 
         $this->setAdapter($adapter);
 
-        if ($this->isComponentUses(FieldSelector::class)) {
-            $this->initFieldSelector($requestInput);
-        }
-
-        if ($this->isComponentUses(ResourceFilter::class)) {
-            $this->initResourceFilter($requestInput);
-        }
-
-        if ($this->isComponentUses(ResourceOffsetPaginator::class)) {
-            $this->initResourceOffsetPaginator($requestInput);
-        }
-
-        if ($this->isComponentUses(ResourceSearch::class)) {
-            $this->initResourceSearch($requestInput);
-        }
-
-        if ($this->isComponentUses(ResourceSort::class)) {
-            $this->initResourceSort($requestInput);
+        foreach ($adapter->componentUses() as $componentClass) {
+            $this->{"init".$this->componentName($componentClass)}($requestInput);
         }
 
         $this->initResponseCompose($this);
@@ -86,24 +67,14 @@ class AlchemistRestfulApi
 
         $instance = new self($requestInput, $adapter);
 
-        if ($instance->isComponentUses(FieldSelector::class)) {
-            $apiClass->fieldSelector($instance->fieldSelector());
-        }
+        foreach ($instance->adapter->componentUses() as $componentClass) {
+            if (! $instance->isComponentUses($componentClass)) {
+                continue;
+            }
 
-        if ($instance->isComponentUses(ResourceFilter::class)) {
-            $apiClass->resourceFilter($instance->resourceFilter());
-        }
+            $componentPropertyName = $instance->componentPropertyName($componentClass);
 
-        if ($instance->isComponentUses(ResourceOffsetPaginator::class)) {
-            $apiClass->resourceOffsetPaginator($instance->resourceOffsetPaginator());
-        }
-
-        if ($instance->isComponentUses(ResourceSort::class)) {
-            $apiClass->resourceSort($instance->resourceSort());
-        }
-
-        if ($instance->isComponentUses(ResourceSearch::class)) {
-            $apiClass->resourceSearch($instance->resourceSearch());
+            $apiClass->{$componentPropertyName}($instance->{$componentPropertyName}());
         }
 
         return $instance;
@@ -137,44 +108,16 @@ class AlchemistRestfulApi
 
         $passes = true;
 
-        if ($this->isComponentUses(FieldSelector::class)
-            && ! $this->fieldSelector()->validate($fieldSelectorErrorBag)->passes()
-        ) {
-            $passes = false;
+        foreach ($this->adapter->componentUses() as $componentClass) {
+            /** @var BaseAlchemistComponent $componentHandler */
+            $componentHandler = $this->{$this->componentPropertyName($componentClass)};
 
-            $errors->fieldSelector = $fieldSelectorErrorBag;
-        }
+            if (! $componentHandler->validate($componentErrorBag)->passes()
+            ) {
+                $passes = false;
 
-        if ($this->isComponentUses(ResourceFilter::class)
-            && ! $this->resourceFilter()->validate($resourceFilterErrorBag)->passes()
-        ) {
-            $passes = false;
-
-            $errors->resourceFilter = $resourceFilterErrorBag;
-        }
-
-        if ($this->isComponentUses(ResourceOffsetPaginator::class)
-            && ! $this->resourceOffsetPaginator()->validate($resourceOffsetPaginatorErrorBag)->passes()
-        ) {
-            $passes = false;
-
-            $errors->resourceOffsetPaginator = $resourceOffsetPaginatorErrorBag;
-        }
-
-        if ($this->isComponentUses(ResourceSearch::class)
-            && ! $this->resourceSearch()->validate($resourceSearchErrorBag)->passes()
-        ) {
-            $passes = false;
-
-            $errors->resourceSearch = $resourceSearchErrorBag;
-        }
-
-        if ($this->isComponentUses(ResourceSort::class)
-            && ! $this->resourceSort()->validate($resourceSortErrorBag)->passes()
-        ) {
-            $passes = false;
-
-            $errors->resourceSort = $resourceSortErrorBag;
+                $errors->{$this->componentPropertyName($componentClass)} = $componentErrorBag;
+            }
         }
 
         $errorBag = new ErrorBag($passes, $errors);
@@ -184,6 +127,24 @@ class AlchemistRestfulApi
         }
 
         return $errorBag;
+    }
+
+    /**
+     * @param string $componentClass
+     * @return string
+     */
+    public function componentName(string $componentClass): string
+    {
+        return ucfirst(Strings::end($componentClass, '\\'));
+    }
+
+    /**
+     * @param string $componentClass
+     * @return string
+     */
+    public function componentPropertyName(string $componentClass): string
+    {
+        return lcfirst(Strings::end($componentClass, '\\'));
     }
 
     /**

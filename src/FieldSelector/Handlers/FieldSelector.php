@@ -2,6 +2,7 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers;
 
+use Nvmcommunity\Alchemist\RestfulApi\Common\Objects\BaseAlchemistComponent;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Notifications\FieldSelectorErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\FieldObject;
@@ -9,7 +10,7 @@ use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\Structure\Abstracts\
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\Structure\CollectionStructure;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Objects\Structure\ObjectStructure;
 
-class FieldSelector
+class FieldSelector extends BaseAlchemistComponent
 {
     /**
      * @var mixed

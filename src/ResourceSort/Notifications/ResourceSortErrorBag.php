@@ -2,7 +2,9 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Notifications;
 
-class ResourceSortErrorBag
+use Nvmcommunity\Alchemist\RestfulApi\Common\Objects\BaseAlchemistErrorBag;
+
+class ResourceSortErrorBag extends BaseAlchemistErrorBag
 {
     public const INVALID_DIRECTION = 'INVALID_DIRECTION';
     public const INVALID_SORT_FIELD = 'INVALID_SORT_FIELD';
@@ -55,6 +57,22 @@ class ResourceSortErrorBag
     }
 
     /**
+     * @return bool
+     */
+    public function passes(): bool
+    {
+        return $this->passes;
+    }
+
+    /**
+     * @return string
+     */
+    public function errorKey(): string
+    {
+        return 'sort';
+    }
+
+    /**
      * @return array
      */
     public function getMessages(): array
@@ -88,14 +106,6 @@ class ResourceSortErrorBag
         }
 
         return $messages;
-    }
-
-    /**
-     * @return bool
-     */
-    public function passes(): bool
-    {
-        return $this->passes;
     }
 
     /**

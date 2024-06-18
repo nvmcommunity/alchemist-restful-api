@@ -2,7 +2,9 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Notifications;
 
-class ResourceOffsetPaginationErrorBag
+use Nvmcommunity\Alchemist\RestfulApi\Common\Objects\BaseAlchemistErrorBag;
+
+class ResourceOffsetPaginationErrorBag extends BaseAlchemistErrorBag
 {
     public const MAX_LIMIT_REACHED = 'MAX_LIMIT_REACHED';
     public const NEGATIVE_OFFSET = 'NEGATIVE_OFFSET';
@@ -76,6 +78,22 @@ class ResourceOffsetPaginationErrorBag
     }
 
     /**
+     * @return bool
+     */
+    public function passes(): bool
+    {
+        return $this->passes;
+    }
+
+    /**
+     * @return string
+     */
+    public function errorKey(): string
+    {
+        return 'paginator';
+    }
+
+    /**
      * @return array
      */
     public function getMessages(): array
@@ -116,14 +134,6 @@ class ResourceOffsetPaginationErrorBag
         }
 
         return $messages;
-    }
-
-    /**
-     * @return bool
-     */
-    public function passes(): bool
-    {
-        return $this->passes;
     }
 
     /**

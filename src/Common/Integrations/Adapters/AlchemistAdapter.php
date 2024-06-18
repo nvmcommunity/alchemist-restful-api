@@ -36,36 +36,30 @@ class AlchemistAdapter
         $errorBag->setErrorHandler(function (CompoundErrors $errors) {
             $messages = [];
 
-            if (isset($errors->fieldSelector)) {
-                $messages['fields'] = $errors->fieldSelector->getMessages();
+            foreach ($this->componentUses() as $componentClass) {
+                $componentPropertyName = $this->alchemistRestfulApi->componentPropertyName($componentClass);
 
-                foreach ($messages['fields'] as &$error) {
-                    if ($error['error_code'] === FieldSelectorErrorBag::UNSELECTABLE_FIELD) {
-                        $fieldStruct = $this->alchemistRestfulApi->fieldSelector()->getFieldStructure($error['error_namespace']);
-
-                        if ($fieldStruct) {
-                            $error['selectable'] = array_keys($fieldStruct['sub']);
-                        }
-                    }
+                if ($errors->{$componentPropertyName} === null) {
+                    continue;
                 }
 
-                unset($error);
-            }
+                if ($componentClass === FieldSelector::class) {
+                    $messages[$errors->fieldSelector->errorKey()] = $errors->fieldSelector->getMessages();
 
-            if (isset($errors->resourceFilter)) {
-                $messages['filtering'] = $errors->resourceFilter->getMessages();
-            }
+                    foreach ($messages[$errors->fieldSelector->errorKey()] as &$error) {
+                        if ($error['error_code'] === FieldSelectorErrorBag::UNSELECTABLE_FIELD) {
+                            $fieldStruct = $this->alchemistRestfulApi->fieldSelector()->getFieldStructure($error['error_namespace']);
 
-            if (isset($errors->resourceOffsetPaginator)) {
-                $messages['paginator'] = $errors->resourceOffsetPaginator->getMessages();
-            }
+                            if ($fieldStruct) {
+                                $error['selectable'] = array_keys($fieldStruct['sub']);
+                            }
+                        }
+                    }
 
-            if (isset($errors->resourceSearch)) {
-                $messages['search'] = $errors->resourceSearch->getMessages();
-            }
-
-            if (isset($errors->resourceSort)) {
-                $messages['sort'] = $errors->resourceSort->getMessages();
+                    unset($error);
+                } else {
+                    $messages[$errors->{$componentPropertyName}->errorKey()] = $errors->{$componentPropertyName}->getMessages();
+                }
             }
 
             return $messages;
