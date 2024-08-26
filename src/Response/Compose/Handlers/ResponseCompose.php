@@ -154,6 +154,10 @@ class ResponseCompose
      */
     private function cleanRedundantDataObject(array $data, string $namespace): array
     {
+        if (empty($data)) {
+            return $data;
+        }
+
         $fieldStructure = $this->alchemist->fieldSelector()->getFieldStructure($namespace);
         $inputFields = $this->alchemist->fieldSelector()->flatFields($namespace, false);
 
