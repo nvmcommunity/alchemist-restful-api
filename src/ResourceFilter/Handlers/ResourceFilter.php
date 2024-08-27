@@ -290,9 +290,17 @@ class ResourceFilter
     /**
      * @return FilteringOptions|null
      */
-    private function getFilteringOption(): ?FilteringOptions
+    public function getFilteringOption(): ?FilteringOptions
     {
         return $this->filteringOption;
+    }
+
+    /**
+     * @return FilteringRules[]
+     */
+    public function getFilteringRules(): array
+    {
+        return $this->filteringRules;
     }
 
     #---------------------------------------------------------------------------#
