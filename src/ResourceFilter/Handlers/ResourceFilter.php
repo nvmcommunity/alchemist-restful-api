@@ -126,7 +126,33 @@ class ResourceFilter
      * @throws FilteringInvalidRuleException
      * @throws FilteringInvalidRuleOperatorException
      */
-    private function pullFilteringValue(string $filteringDotName, string $filteringOperator)
+    public function getFilteringValue(string $filteringDotName, string $filteringOperator)
+    {
+        $filteringRule = $this->getFilteringRuleByDotName($filteringDotName);
+
+        if ($filteringRule === null) {
+            throw new FilteringInvalidRuleException($filteringDotName);
+        }
+
+        if (! $filteringRule->hasOperator($filteringOperator)) {
+            throw new FilteringInvalidRuleOperatorException($filteringDotName, $filteringOperator);
+        }
+
+        $filteringValue = $this->collectFilteringValueByDotName($filteringDotName, $filteringOperator);
+
+        return $filteringValue;
+    }
+
+    /**
+     * @param string $filteringDotName
+     * @param string $filteringOperator
+     *
+     * @return mixed
+     *
+     * @throws FilteringInvalidRuleException
+     * @throws FilteringInvalidRuleOperatorException
+     */
+    public function pullFilteringValue(string $filteringDotName, string $filteringOperator)
     {
         $filteringRule = $this->getFilteringRuleByDotName($filteringDotName);
 
