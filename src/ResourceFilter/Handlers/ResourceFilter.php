@@ -194,6 +194,62 @@ class ResourceFilter
     }
 
     /**
+     * @param string $filteringName
+     * @param string $filteringOperator
+     * @param $filteringValue
+     * @return ResourceFilter
+     * @throws FilteringException
+     */
+    public function addFiltering(string $filteringName, string $filteringOperator, $filteringValue): ResourceFilter
+    {
+        if ($this->hasFiltering($filteringName, $filteringOperator)) {
+            throw new FilteringException('Filtering already exists');
+        }
+
+        Arrays::dotSet($this->filtering, "{$filteringName}:{$filteringOperator}", $filteringValue);
+
+        Arrays::initFirst($this->filteringMap, $filteringName, []);
+
+        $this->filteringMap[$filteringName][$filteringOperator] = $filteringValue;
+
+        return $this;
+    }
+
+    /**
+     * @param array $filteringRules
+     * @return ResourceFilter
+     * @throws FilteringRuleAlreadyDefinedException
+     */
+    public function addFilteringRulesIfNotExists(array $filteringRules): ResourceFilter
+    {
+        $newFilteringRules = [];
+
+        foreach ($filteringRules as $filteringRule) {
+            if ($this->hasFilteringRule($filteringRule->getName())) {
+                continue;
+            }
+
+            $newFilteringRules[] = $filteringRule;
+        }
+
+        $this->filteringRules = array_merge($this->filteringRules, $newFilteringRules);
+
+        $this->initFilteringRules($this->filteringRules);
+
+        return $this;
+    }
+
+    /**
+     * @param string $filteringRuleName
+     * @return bool
+     */
+    public function hasFilteringRule(string $filteringRuleName): bool
+    {
+        return isset($this->mapFilteringRules['name'][$filteringRuleName])
+            || isset($this->mapFilteringRules['dot_name'][$filteringRuleName]);
+    }
+
+    /**
      * @return FilteringObject[]
      */
     public function filtering(): array
