@@ -173,6 +173,19 @@ class ResourceFilter
     }
 
     /**
+     * @param array $filteringRules
+     * @return ResourceFilter
+     */
+    public function addFilteringRules(array $filteringRules): ResourceFilter
+    {
+        $this->filteringRules = array_merge($this->filteringRules, $filteringRules);
+
+        $this->initFilteringRules($this->filteringRules);
+
+        return $this;
+    }
+
+    /**
      * @param string $filteringName
      * @param string $filteringOperator
      * @param $filteringValue
