@@ -48,6 +48,7 @@ This package is production-ready with 193 tests and 1151 assertions
 - **2.0.17**: (2024-06-14) Fix the incorrect pattern in the field parser
 - **2.0.19**: (2024-06-14) Field parsing syntax supports spaces
 - **2.0.20**: (2024-06-14) Add a non-static version of the API class: StatefulAlchemistQueryable
+- **2.0.26**: (2025-03-11) Fix the incorrect validation of the field selector
 
 ## Introduction
 
