@@ -17,7 +17,7 @@ class FieldSelectorTest extends TestCase
     public function test_FieldSelector_in_NormalCase_must_pass(): void
     {
         $restfulApi = new AlchemistRestfulApi([
-            'fields' => 'id,order_date,product{product_id,product_name,attributes{attribute_id,attribute_name}}'
+            'fields' => 'id,order_date,product{product_id,product_name,attributes{attribute_id,attribute_name}},gifts{gift_id,gift_name}'
         ]);
 
         $restfulApi->fieldSelector()
@@ -32,19 +32,25 @@ class FieldSelectorTest extends TestCase
                         'attribute_name',
                     ]),
                 ]),
+                new ObjectStructure('gifts', null, [
+                    'gift_id',
+                    'gift_name',
+                ])
             ]);
 
         $this->assertTrue($restfulApi->validate()->passes());
 
         $this->assertIsArray($restfulApi->fieldSelector()->fields());
 
-        $this->assertCount(3, $restfulApi->fieldSelector()->fields());
+        $this->assertCount(4, $restfulApi->fieldSelector()->fields());
 
         $this->assertContainsOnlyInstancesOf(FieldObject::class, $restfulApi->fieldSelector()->fields());
 
-        $this->assertSame(['id', 'order_date', 'product'], $restfulApi->fieldSelector()->flatFields());
+        $this->assertSame(['id', 'order_date', 'product', 'gifts'], $restfulApi->fieldSelector()->flatFields());
 
         $this->assertSame(['product_id', 'product_name', 'attributes'], $restfulApi->fieldSelector()->flatFields('$.product'));
+
+        $this->assertSame(['gift_id', 'gift_name'], $restfulApi->fieldSelector()->flatFields('$.gifts'));
 
         $this->assertSame(['attribute_id', 'attribute_name'], $restfulApi->fieldSelector()->flatFields('$.product.attributes'));
     }
@@ -231,6 +237,36 @@ class FieldSelectorTest extends TestCase
 
         $this->assertSame(['id', 'order_date', 'product'], $restfulApi->fieldSelector()->flatFields());
         $this->assertSame(['id', 'name', 'not_exist_field'], $restfulApi->fieldSelector()->flatFields('$.product'));
+    }
+
+    /**
+     * @throws AlchemistRestfulApiException
+     */
+    public function test_FieldSelector_when_SelectNestedFieldNotInStructureOfSecondObject_must_False_validation(): void
+    {
+        $restfulApi = new AlchemistRestfulApi([
+            'fields' => 'id,order_date,product{id,name},gift{id,name,not_exist_field}'
+        ]);
+
+        $restfulApi->fieldSelector()
+            ->defineFieldStructure([
+                'id',
+                'order_date',
+                new ObjectStructure('product', null, [
+                    'id',
+                    'name',
+                ]),
+                new ObjectStructure('gift', null, [
+                    'id',
+                    'name',
+                ]),
+            ]);
+
+        $this->assertFalse($restfulApi->validate()->passes());
+
+        $this->assertSame(['id', 'order_date', 'product', 'gift'], $restfulApi->fieldSelector()->flatFields());
+        $this->assertSame(['id', 'name'], $restfulApi->fieldSelector()->flatFields('$.product'));
+        $this->assertSame(['id', 'name', 'not_exist_field'], $restfulApi->fieldSelector()->flatFields('$.gift'));
     }
 
     /**

@@ -355,31 +355,31 @@ class FieldSelector extends BaseAlchemistComponent
      */
     private function deepCompareSelectableFields(string $namespace, array $fields, $selectableFields, &$errors): bool
     {
-        $isFieldValid = true;
+        $diffWithSelectableFields = array_diff_key($fields, $selectableFields['sub'] ?? []);
+
+        if (! empty($diffWithSelectableFields)) {
+            $errors = ['namespace' => $namespace, 'fields' => array_keys(array_map(fn(FieldObject $item) => 'ignored', $diffWithSelectableFields))];
+
+            return false;
+        }
 
         /** @var FieldObject $fieldObject */
         foreach ($fields as $fieldObject) {
-            $diffWithSelectableFields = array_diff_key($fields, $selectableFields['sub'] ?? []);
-
-            if (! empty($diffWithSelectableFields)) {
-                $isFieldValid = false;
-
-                $errors = ['namespace' => $namespace, 'fields' => array_keys(array_map(fn(FieldObject $item) => 'ignored', $diffWithSelectableFields))];
-
-                break;
-            }
-
             if ($fieldObject->getSubFields()) {
-                return $this->deepCompareSelectableFields(
+                $isFieldValid = $this->deepCompareSelectableFields(
                     "$namespace.{$fieldObject->getName()}",
                     $fieldObject->getSubFields(),
                     $selectableFields['sub'][$fieldObject->getName()],
                     $errors
                 );
+
+                if (! $isFieldValid) {
+                    return false;
+                }
             }
         }
 
-        return $isFieldValid;
+        return true;
     }
 
     /**
