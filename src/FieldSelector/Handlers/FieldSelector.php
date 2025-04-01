@@ -495,9 +495,9 @@ class FieldSelector extends BaseAlchemistComponent
     /**
      * @param array $fields
      * @param string $namespace
-     * @return array|null
+     * @return array
      */
-    private function namespaceFields(array $fields, string $namespace): ?array
+    private function namespaceFields(array $fields, string $namespace): array
     {
         if (empty($namespace)) {
             return $fields;
@@ -521,7 +521,7 @@ class FieldSelector extends BaseAlchemistComponent
             }
         }
 
-        return null;
+        return [];
     }
 
     /**
@@ -566,9 +566,9 @@ class FieldSelector extends BaseAlchemistComponent
     /**
      * @param array $fieldStructures
      * @param string $namespace
-     * @return array|null
+     * @return array
      */
-    private function namespaceDefaultFields(array $fieldStructures, string $namespace): ?array
+    private function namespaceDefaultFields(array $fieldStructures, string $namespace): array
     {
         if (empty($namespace)) {
             return $this->parseFields(implode(',', $fieldStructures['defaultFields'] ?? []));
@@ -591,7 +591,7 @@ class FieldSelector extends BaseAlchemistComponent
             }
         }
 
-        return null;
+        return [];
     }
 
     /**
