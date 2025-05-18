@@ -455,6 +455,7 @@ class ResourceFilter
      * @param string $filteringCollectionName
      *
      * @return void
+     * @throws FilteringRuleAlreadyDefinedException
      */
     private function initRecursiveFilteringRules(array $filteringRules, string $filteringCollectionName = ''): void
     {
@@ -575,8 +576,24 @@ class ResourceFilter
      */
     private function validateFiltering(): ResourceFilterErrorBag
     {
-        return $this->validateRecursiveFiltering($this->filtering);
+        $filteringErrors = [
+            'invalid_filtering' =>  [],
+            'invalid_filtering_value' =>  [],
+        ];
+
+        $this->validateRecursiveFiltering($this->filtering, $filteringErrors);
+
+        $invalidFiltering = $filteringErrors['invalid_filtering'] ?? [];
+        $invalidFilteringValue = $filteringErrors['invalid_filtering_value'] ?? [];
+
+        return new ResourceFilterErrorBag(
+            (empty($invalidFiltering) && empty($invalidFilteringValue)),
+            [],
+            $invalidFiltering,
+            $invalidFilteringValue
+        );
     }
+
 
     /**
      * @return ResourceFilterErrorBag
@@ -741,6 +758,7 @@ class ResourceFilter
     }
 
     /**
+     * @param array $filteringErrors
      * @param string $filteringTitle
      * @param FilteringRules $filteringRule
      * @param string $filteringOperator
@@ -748,7 +766,7 @@ class ResourceFilter
      * @return InvalidFilteringValue|null
      * @throws FilteringException
      */
-    private function validateGroupTypeValue(string $filteringTitle, FilteringRules $filteringRule, string $filteringOperator, $filteringValue): ?InvalidFilteringValue
+    private function validateGroupTypeValue(array &$filteringErrors, string $filteringTitle, FilteringRules $filteringRule, string $filteringOperator, $filteringValue): ?InvalidFilteringValue
     {
         if ($filteringOperator !== 'eq' && $filteringRule->getType() === FilteringRules::TYPE_GROUP) {
             throw new FilteringException('Filtering Rule group just support only operator: eq');
@@ -758,7 +776,7 @@ class ResourceFilter
             return new InvalidFilteringValue($filteringTitle, ['array']);
         }
 
-        $this->validateRecursiveFiltering($filteringValue, $filteringRule, $filteringTitle);
+        $this->validateRecursiveFiltering($filteringValue, $filteringErrors, $filteringRule, $filteringTitle);
 
         return null;
     }
@@ -1089,14 +1107,15 @@ class ResourceFilter
 
     /**
      * @param array $filtering
+     * @param array $filteringErrors
      * @param FilteringRules|null $filteringRuleGroup
      * @param string|null $filteringGroupTitle
-     * @return ResourceFilterErrorBag
+     * @return void
      */
-    private function validateRecursiveFiltering(array $filtering, ?FilteringRules $filteringRuleGroup = null, ?string $filteringGroupTitle = null): ResourceFilterErrorBag
+    private function validateRecursiveFiltering(
+        array $filtering, array &$filteringErrors, ?FilteringRules $filteringRuleGroup = null, ?string $filteringGroupTitle = null
+    ): void
     {
-        $filteringErrors = [];
-
         foreach ($filtering as $filteringNameWithOperator => $filteringValue) {
             $filteringTitle = $filteringGroupTitle ? "{$filteringGroupTitle}[{$filteringNameWithOperator}]" : $filteringNameWithOperator;
 
@@ -1110,8 +1129,6 @@ class ResourceFilter
                 || $conditionOperator === null
                 || ! $filteringRule->hasOperator($filteringOperator)
             ) {
-                Arrays::initFirst($filteringErrors, 'invalid_filtering', []);
-
                 $filteringErrors['invalid_filtering'][] = $filteringTitle;
 
                 continue;
@@ -1120,7 +1137,11 @@ class ResourceFilter
             $supportedFilteringValue = null;
 
             $ruleHandlerMap = [
-                FilteringRules::TYPE_GROUP => fn() => $this->validateGroupTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
+                FilteringRules::TYPE_GROUP => function () use (
+                    &$filteringErrors, $filteringTitle, $filteringRule, $filteringOperator, $filteringValue
+                ) {
+                    return $this->validateGroupTypeValue($filteringErrors, $filteringTitle, $filteringRule, $filteringOperator, $filteringValue);
+                },
                 FilteringRules::TYPE_STRING => fn() => $this->validateStringTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
                 FilteringRules::TYPE_ENUM => fn() => $this->validateEnumTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
                 FilteringRules::TYPE_BOOLEAN => fn() => $this->validateBooleanTypeValue($filteringTitle, $filteringRule, $filteringOperator, $filteringValue),
@@ -1133,17 +1154,9 @@ class ResourceFilter
             $supportedFilteringValue = ($ruleHandlerMap[$filteringRule->getType()])();
 
             if (! empty($supportedFilteringValue)) {
-                Arrays::initFirst($filteringErrors, 'invalid_filtering_value', []);
-
                 $filteringErrors['invalid_filtering_value'][] = $supportedFilteringValue;
             }
         }
-
-        if (! empty($filteringErrors)) {
-            return new ResourceFilterErrorBag(false, [], $filteringErrors['invalid_filtering'] ?? [], $filteringErrors['invalid_filtering_value'] ?? []);
-        }
-
-        return new ResourceFilterErrorBag(true);
     }
 
     /**
