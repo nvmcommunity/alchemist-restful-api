@@ -20,12 +20,31 @@ class AlchemistAdapter
     protected AlchemistRestfulApi $alchemistRestfulApi;
 
     /**
+     * @deprecated use setAlchemistRestfulApi() instead.
+     *
      * @param AlchemistRestfulApi $alchemistRestfulApi
      * @return void
      */
     public function for(AlchemistRestfulApi $alchemistRestfulApi): void
     {
         $this->alchemistRestfulApi = $alchemistRestfulApi;
+    }
+
+    /**
+     * @param AlchemistRestfulApi $alchemistRestfulApi
+     * @return void
+     */
+    public function setAlchemistRestfulApi(AlchemistRestfulApi $alchemistRestfulApi): void
+    {
+        $this->alchemistRestfulApi = $alchemistRestfulApi;
+    }
+
+    /**
+     * @return AlchemistRestfulApi
+     */
+    public function getAlchemistRestfulApi(): AlchemistRestfulApi
+    {
+        return $this->alchemistRestfulApi;
     }
 
     /**

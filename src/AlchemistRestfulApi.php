@@ -2,18 +2,17 @@
 
 namespace Nvmcommunity\Alchemist\RestfulApi;
 
+use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Helpers\Strings;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\Adapters\AlchemistAdapter;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\AlchemistQueryable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\StatefulAlchemistQueryable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\CompoundErrors;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ErrorBag;
-use Nvmcommunity\Alchemist\RestfulApi\Common\Objects\BaseAlchemistComponent;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\FieldSelectable;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers\ResourceFilter;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\ResourceFilterable;
-use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
-use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\FieldSelectable;
 use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Handlers\ResourceOffsetPaginator;
 use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\ResourceOffsetPaginate;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers\ResourceSearch;
@@ -42,10 +41,26 @@ class AlchemistRestfulApi
     {
         $adapter = $adapter ?? new AlchemistAdapter;
 
-        $this->setAdapter($adapter);
+        $this->linkAdapter($adapter);
 
         foreach ($adapter->componentUses() as $componentClass) {
-            $this->{"init".$this->componentName($componentClass)}($requestInput);
+            switch ($componentClass) {
+                case FieldSelector::class:
+                    $this->initFieldSelector($requestInput);
+                    break;
+                case ResourceFilter::class:
+                    $this->initResourceFilter($requestInput);
+                    break;
+                case ResourceOffsetPaginator::class:
+                    $this->initResourceOffsetPaginator($requestInput);
+                    break;
+                case ResourceSort::class:
+                    $this->initResourceSort($requestInput);
+                    break;
+                case ResourceSearch::class:
+                    $this->initResourceSearch($requestInput);
+                    break;
+            }
         }
 
         $this->initResponseCompose($this);
@@ -66,12 +81,17 @@ class AlchemistRestfulApi
             $apiClass = new $apiClass;
         }
 
+        $hasValidApiInstance = $apiClass instanceof AlchemistQueryable
+            || $apiClass instanceof StatefulAlchemistQueryable;
+
+        if (! $hasValidApiInstance) {
+            throw new \RuntimeException("Api Class must be instance of AlchemistQueryable or StatefulAlchemistQueryable");
+        }
+
         if ($adapter === null) {
             if ($apiClass instanceof AlchemistQueryable) {
                 $adapter = $apiClass::getAdapter();
-            }
-
-            if ($apiClass instanceof StatefulAlchemistQueryable) {
+            } elseif ($apiClass instanceof StatefulAlchemistQueryable) {
                 $adapter = $apiClass->getAdapter();
             }
         }
@@ -85,20 +105,42 @@ class AlchemistRestfulApi
 
             switch ($componentClass) {
                 case FieldSelector::class:
-                    $apiClass->fieldSelector($instance->fieldSelector());
+                    if ($apiClass instanceof AlchemistQueryable) {
+                        $apiClass::fieldSelector($instance->fieldSelector());
+                    } elseif ($apiClass instanceof StatefulAlchemistQueryable) {
+                        $apiClass->fieldSelector($instance->fieldSelector());
+                    }
                     break;
                 case ResourceFilter::class:
-                    $apiClass->resourceFilter($instance->resourceFilter());
+                    if ($apiClass instanceof AlchemistQueryable) {
+                        $apiClass::resourceFilter($instance->resourceFilter());
+                    } elseif ($apiClass instanceof StatefulAlchemistQueryable) {
+                        $apiClass->resourceFilter($instance->resourceFilter());
+                    }
                     break;
                 case ResourceOffsetPaginator::class:
-                    $apiClass->resourceOffsetPaginator($instance->resourceOffsetPaginator());
+                    if ($apiClass instanceof AlchemistQueryable) {
+                        $apiClass::resourceOffsetPaginator($instance->resourceOffsetPaginator());
+                    } elseif ($apiClass instanceof StatefulAlchemistQueryable) {
+                        $apiClass->resourceOffsetPaginator($instance->resourceOffsetPaginator());
+                    }
                     break;
                 case ResourceSort::class:
-                    $apiClass->resourceSort($instance->resourceSort());
+                    if ($apiClass instanceof AlchemistQueryable) {
+                        $apiClass::resourceSort($instance->resourceSort());
+                    } elseif ($apiClass instanceof StatefulAlchemistQueryable) {
+                        $apiClass->resourceSort($instance->resourceSort());
+                    }
                     break;
                 case ResourceSearch::class:
-                    $apiClass->resourceSearch($instance->resourceSearch());
+                    if ($apiClass instanceof AlchemistQueryable) {
+                        $apiClass::resourceSearch($instance->resourceSearch());
+                    } elseif ($apiClass instanceof StatefulAlchemistQueryable) {
+                        $apiClass->resourceSearch($instance->resourceSearch());
+                    }
                     break;
+                default:
+                    throw new \RuntimeException("Missing handle for component '{$componentClass}'");
             }
         }
 
@@ -106,13 +148,22 @@ class AlchemistRestfulApi
     }
 
     /**
+     * @deprecated Use linkAdapter() instead.
+     *
      * @param AlchemistAdapter $adapter
      */
     public function setAdapter(AlchemistAdapter $adapter): void
     {
-        $this->adapter = $adapter;
+        $this->linkAdapter($adapter);
+    }
 
-        $this->adapter->for($this);
+    /**
+     * @param AlchemistAdapter $adapter
+     */
+    public function linkAdapter(AlchemistAdapter $adapter): void
+    {
+        $this->adapter = $adapter;
+        $this->adapter->setAlchemistRestfulApi($this);
     }
 
     /**
@@ -134,14 +185,39 @@ class AlchemistRestfulApi
         $passes = true;
 
         foreach ($this->adapter->componentUses() as $componentClass) {
-            /** @var BaseAlchemistComponent $componentHandler */
-            $componentHandler = $this->{$this->componentPropertyName($componentClass)};
-
-            if (! $componentHandler->validate($componentErrorBag)->passes()
-            ) {
-                $passes = false;
-
-                $errors->{$this->componentPropertyName($componentClass)} = $componentErrorBag;
+            switch ($componentClass) {
+                case FieldSelector::class:
+                    if (! $this->fieldSelector->validate($componentErrorBag)->passes()) {
+                        $passes = false;
+                        $errors->fieldSelector = $componentErrorBag;
+                    }
+                    break;
+                case ResourceFilter::class:
+                    if (! $this->resourceFilter->validate($componentErrorBag)->passes()) {
+                        $passes = false;
+                        $errors->resourceFilter = $componentErrorBag;
+                    }
+                    break;
+                case ResourceOffsetPaginator::class:
+                    if (! $this->resourceOffsetPaginator->validate($componentErrorBag)->passes()) {
+                        $passes = false;
+                        $errors->resourceOffsetPaginator = $componentErrorBag;
+                    }
+                    break;
+                case ResourceSort::class:
+                    if (! $this->resourceSort->validate($componentErrorBag)->passes()) {
+                        $passes = false;
+                        $errors->resourceSort = $componentErrorBag;
+                    }
+                    break;
+                case ResourceSearch::class:
+                    if (! $this->resourceSearch->validate($componentErrorBag)->passes()) {
+                        $passes = false;
+                        $errors->resourceSearch = $componentErrorBag;
+                    }
+                    break;
+                default:
+                    throw new \RuntimeException("Missing validate for component '{$componentClass}'");
             }
         }
 
