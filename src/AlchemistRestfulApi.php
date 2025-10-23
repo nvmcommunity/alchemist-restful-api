@@ -9,11 +9,16 @@ use Nvmcommunity\Alchemist\RestfulApi\Common\Integrations\StatefulAlchemistQuery
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\CompoundErrors;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Notification\ErrorBag;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Objects\BaseAlchemistComponent;
+use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\Handlers\FieldSelector;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\Handlers\ResourceFilter;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceFilter\ResourceFilterable;
 use Nvmcommunity\Alchemist\RestfulApi\Common\Exceptions\AlchemistRestfulApiException;
 use Nvmcommunity\Alchemist\RestfulApi\FieldSelector\FieldSelectable;
+use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\Handlers\ResourceOffsetPaginator;
 use Nvmcommunity\Alchemist\RestfulApi\ResourcePaginations\OffsetPaginator\ResourceOffsetPaginate;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\Handlers\ResourceSearch;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSearch\ResourceSearchable;
+use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\Handlers\ResourceSort;
 use Nvmcommunity\Alchemist\RestfulApi\ResourceSort\ResourceSortable;
 use Nvmcommunity\Alchemist\RestfulApi\Response\Compose\ResourceResponsible;
 
@@ -61,8 +66,14 @@ class AlchemistRestfulApi
             $apiClass = new $apiClass;
         }
 
-        if ($adapter !== null) {
-            $adapter = $apiClass->getAdapter();
+        if ($adapter === null) {
+            if ($apiClass instanceof AlchemistQueryable) {
+                $adapter = $apiClass::getAdapter();
+            }
+
+            if ($apiClass instanceof StatefulAlchemistQueryable) {
+                $adapter = $apiClass->getAdapter();
+            }
         }
 
         $instance = new self($requestInput, $adapter);
@@ -72,9 +83,23 @@ class AlchemistRestfulApi
                 continue;
             }
 
-            $componentPropertyName = $instance->componentPropertyName($componentClass);
-
-            $apiClass->{$componentPropertyName}($instance->{$componentPropertyName}());
+            switch ($componentClass) {
+                case FieldSelector::class:
+                    $apiClass->fieldSelector($instance->fieldSelector());
+                    break;
+                case ResourceFilter::class:
+                    $apiClass->resourceFilter($instance->resourceFilter());
+                    break;
+                case ResourceOffsetPaginator::class:
+                    $apiClass->resourceOffsetPaginator($instance->resourceOffsetPaginator());
+                    break;
+                case ResourceSort::class:
+                    $apiClass->resourceSort($instance->resourceSort());
+                    break;
+                case ResourceSearch::class:
+                    $apiClass->resourceSearch($instance->resourceSearch());
+                    break;
+            }
         }
 
         return $instance;
