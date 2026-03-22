@@ -39,6 +39,7 @@ class ResourceFilter
         'in' => 'in',
         'not_in' => 'not_in',
         'contains' => 'contains',
+        'starts_with' => 'starts_with',
         'between' => 'between',
         'not_between' => 'not_between',
         'empty' => 'empty',
@@ -629,6 +630,7 @@ class ResourceFilter
             'gt'            => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
             'lt'            => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
             'contains'      => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
+            'starts_with'   => fn() => $this->validateNotStructValue($filteringTitle, $filteringValue),
             'in'            => fn() => $this->validateArrayValue($filteringTitle, $filteringValue),
             'not_in'        => fn() => $this->validateArrayValue($filteringTitle, $filteringValue),
             'between'       => fn() => $this->validateBetweenValue($filteringOperator, $filteringTitle, $filteringValue),
@@ -855,7 +857,7 @@ class ResourceFilter
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
                 function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator) {
-                    if ($filteringOperator === 'contains') {
+                    if ($filteringOperator === 'contains' || $filteringOperator === 'starts_with') {
                         if (!$this->isValidEnumValue($filteringValue)) {
                             return new InvalidFilteringValue($filteringTitle, ['string']);
                         }
@@ -927,7 +929,7 @@ class ResourceFilter
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
                 function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator) {
-                    if ($filteringOperator === 'contains') {
+                    if ($filteringOperator === 'contains' || $filteringOperator === 'starts_with') {
                         if (!$this->isValidStringValue($filteringValue)) {
                             return new InvalidFilteringValue($filteringTitle, ['string']);
                         }
@@ -965,7 +967,7 @@ class ResourceFilter
         try {
             $this->validateFilteringRuleOperator($filteringTitle, $filteringRule, $filteringOperator, $filteringValue,
                 function ($filteringTitle, $filteringValue) use ($filteringRule, $filteringOperator) {
-                    if ($filteringOperator === 'contains') {
+                    if ($filteringOperator === 'contains' || $filteringOperator === 'starts_with') {
                         if (!$this->isValidStringValue($filteringValue)) {
                             return new InvalidFilteringValue($filteringTitle, ['string']);
                         }

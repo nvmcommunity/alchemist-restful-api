@@ -51,6 +51,7 @@ This package is production-ready with 193 tests and 1151 assertions
 - **2.0.26**: (2025-03-11) Fix the incorrect validation of the field selector
 - **2.0.27**: (2025-04-01) Fix unreasonable null errors in field selector
 - **2.0.30**: (2025-10-23) Refactor: Decouple AlchemistRestfulApi from concrete component implementations
+- **2.0.31**: (2026-03-22) Add support for the `starts_with` resource filter operator
 
 ## Introduction
 
@@ -412,6 +413,7 @@ This table also describes the structure of filtering values for special data typ
 | lte              | \<=                | lower than or equal    | \<value\>                              |
 | gte              | \>=                | greater than or equal  | \<value\>                              |
 | contains         | contains _(*)_     | contains               | \<value\>                              |
+| starts_with      | starts_with _(*)_  | starts with            | \<value\>                              |
 | between          | between _(*)_      | between                | array(\<value[0]\>, \<value[1]\>)      |
 | not_between      | not_between _(*)_  | not between            | array(\<value[0]\>, \<value[1]\>)      |
 | in               | in _(*)_           | in                     | array(\<value[0]\>, \<value[1]\>, ...) |
